@@ -436,4 +436,3 @@ export type ProductionRecord = Database['public']['Tables']['production_records'
 export type FinancialRecord = Database['public']['Tables']['financial_records']['Row'];
 export type Task = Database['public']['Tables']['tasks']['Row'];
 export type Staff = Database['public']['Tables']['staff']['Row'];
-```

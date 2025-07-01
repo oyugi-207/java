@@ -44,6 +44,7 @@ const animalSchema = z.object({
   acquisitionCost: z.number().min(0).optional(),
   currentValue: z.number().min(0).optional(),
   salePrice: z.number().min(0).optional(),
+  saleDate: z.string().optional(),
   insurance: z.boolean().optional(),
   insuranceProvider: z.string().optional(),
   veterinarian: z.string().optional(),
@@ -93,6 +94,8 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
       acquisitionDate: '',
       acquisitionCost: undefined,
       currentValue: undefined,
+      salePrice: undefined,
+      saleDate: '',
       insuranceProvider: '',
       veterinarian: '',
       feedType: '',
@@ -127,6 +130,8 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
         acquisitionDate: animal.acquisitionDate || '',
         acquisitionCost: animal.acquisitionCost,
         currentValue: animal.currentValue,
+        salePrice: animal.salePrice,
+        saleDate: animal.saleDate || '',
         insurance: animal.insurance || false,
         insuranceProvider: animal.insuranceProvider || '',
         veterinarian: animal.veterinarian || '',
@@ -140,6 +145,14 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
     }
   }, [animal, isEditing, form]);
 
+  const generateAnimalId = (species: string, purpose: string) => {
+    const speciesCode = species.slice(0, 2).toUpperCase();
+    const purposeCode = purpose.slice(0, 1).toUpperCase();
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substr(2, 3).toUpperCase();
+    return `AID-${speciesCode}${purposeCode}-${timestamp}-${random}`;
+  };
+
   const onSubmit = async (data: AnimalFormData) => {
     setIsLoading(true);
     try {
@@ -147,8 +160,14 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
         await updateAnimal(animal.id, data);
         toast.success('Animal updated successfully');
       } else {
-        await addAnimal(data);
-        toast.success('Animal added successfully');
+        // Generate automatic ID for new animals
+        const animalData = {
+          ...data,
+          animalId: generateAnimalId(data.species, data.purpose),
+          acquisitionDate: data.acquisitionDate || new Date().toISOString().split('T')[0],
+        };
+        await addAnimal(animalData);
+        toast.success(`Animal added successfully with ID: ${animalData.animalId}`);
       }
       onOpenChange(false);
       form.reset();
@@ -402,10 +421,36 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
                         <SelectItem value="sick">Sick</SelectItem>
                         <SelectItem value="pregnant">Pregnant</SelectItem>
                         <SelectItem value="quarantine">Quarantine</SelectItem>
+                        <SelectItem value="for_sale">For Sale</SelectItem>
                         <SelectItem value="sold">Sold</SelectItem>
                         <SelectItem value="deceased">Deceased</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Auto-generated Animal ID Display */}
+                  <div className="col-span-2 space-y-2">
+                    <Label>Animal ID</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        value={isEditing ? animal?.id || 'N/A' : 'Auto-generated on save'}
+                        disabled
+                        className="farm-input bg-gray-50"
+                      />
+                      {isEditing && animal?.id && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateQRCode}
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ID format: AID-[Species][Purpose]-[Timestamp]-[Random]
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -637,6 +682,60 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
                       />
                     </div>
                   </div>
+
+                  {/* Sale Information */}
+                  {form.watch('status') === 'sold' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div className="space-y-2">
+                        <Label htmlFor="salePrice">Sale Price</Label>
+                        <Input
+                          id="salePrice"
+                          type="number"
+                          step="0.01"
+                          {...form.register('salePrice', { valueAsNumber: true })}
+                          className="farm-input"
+                          placeholder="Final sale price"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="saleDate">Sale Date</Label>
+                        <Input
+                          id="saleDate"
+                          type="date"
+                          value={form.watch('saleDate') || new Date().toISOString().split('T')[0]}
+                          onChange={(e) => form.setValue('saleDate', e.target.value)}
+                          className="farm-input"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Profit/Loss Calculation */}
+                  {form.watch('acquisitionCost') && form.watch('currentValue') && (
+                    <div className="col-span-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-medium text-blue-900 mb-2">Financial Summary</h4>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Acquisition Cost:</span>
+                          <p className="font-medium">${form.watch('acquisitionCost')?.toLocaleString() || 0}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Current Value:</span>
+                          <p className="font-medium">${form.watch('currentValue')?.toLocaleString() || 0}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Profit/Loss:</span>
+                          <p className={`font-medium ${
+                            (form.watch('currentValue') || 0) - (form.watch('acquisitionCost') || 0) >= 0 
+                              ? 'text-green-600' 
+                              : 'text-red-600'
+                          }`}>
+                            ${((form.watch('currentValue') || 0) - (form.watch('acquisitionCost') || 0)).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center space-x-2">
                     <Switch
