@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useFarmData } from '@/lib/data';
-import { LandingPage } from '@/components/landing/landing-page';
+import LandingPage from '@/components/landing/landing-page';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { QuickActions } from '@/components/dashboard/quick-actions';
