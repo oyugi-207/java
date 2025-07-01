@@ -793,3 +793,8 @@ export const useFarmInventory = () => {
   const data = useFarmData();
   return data.inventory;
 };
+// Create a hook that returns filtered data for the current user's farm
+export const useFarmDataHook = () => {
+  const store = useDataStore();
+  const farmId = getCurrentFarmId();
+};

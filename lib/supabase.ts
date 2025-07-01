@@ -1,8 +1,16 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'demo-key';
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
+if (!isDemoMode && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  console.warn('Supabase URL not found. Running in demo mode.');
+}
+
+if (!isDemoMode && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn('Supabase anon key not found. Running in demo mode.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -66,6 +74,11 @@ export interface Database {
           rfid_tag: string | null;
           created_at: string;
           updated_at: string;
+          animal_id: string | null;
+          purchase_date: string | null;
+          sale_date: string | null;
+          purchase_price: number | null;
+          sale_price: number | null;
         };
         Insert: {
           id?: string;
@@ -85,6 +98,11 @@ export interface Database {
           rfid_tag?: string | null;
           created_at?: string;
           updated_at?: string;
+          animal_id?: string | null;
+          purchase_date?: string | null;
+          sale_date?: string | null;
+          purchase_price?: number | null;
+          sale_price?: number | null;
         };
         Update: {
           id?: string;
@@ -103,6 +121,11 @@ export interface Database {
           qr_code?: string | null;
           rfid_tag?: string | null;
           updated_at?: string;
+          animal_id?: string | null;
+          purchase_date?: string | null;
+          sale_date?: string | null;
+          purchase_price?: number | null;
+          sale_price?: number | null;
         };
       };
       health_records: {
@@ -413,3 +436,4 @@ export type ProductionRecord = Database['public']['Tables']['production_records'
 export type FinancialRecord = Database['public']['Tables']['financial_records']['Row'];
 export type Task = Database['public']['Tables']['tasks']['Row'];
 export type Staff = Database['public']['Tables']['staff']['Row'];
+```

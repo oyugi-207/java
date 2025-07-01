@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -26,14 +25,14 @@
     --input: 226 240 231;
     --ring: 74 136 87;
     --radius: 0.75rem;
-    
+
     /* Chart Colors */
     --chart-1: 74 136 87;
     --chart-2: 132 181 145;
     --chart-3: 194 220 201;
     --chart-4: 255 193 8;
     --chart-5: 255 125 0;
-    
+
     /* Status Colors */
     --success: 34 197 94;
     --warning: 245 158 11;
@@ -42,7 +41,7 @@
     --health-good: 132 204 22;
     --health-warning: 245 158 11;
     --health-critical: 239 68 68;
-    
+
     /* Brand Colors */
     --farm-green: 74 136 87;
     --farm-light-green: 132 181 145;
@@ -72,7 +71,7 @@
     --border: 40 60 46;
     --input: 40 60 46;
     --ring: 132 181 145;
-    
+
     /* Chart Colors - Dark */
     --chart-1: 132 181 145;
     --chart-2: 74 136 87;
@@ -86,12 +85,12 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
@@ -102,11 +101,11 @@
   .glass {
     @apply bg-white/80 backdrop-blur-lg border border-white/30 shadow-xl;
   }
-  
+
   .glass-dark {
     @apply bg-gray-900/80 backdrop-blur-lg border border-gray-700/30 shadow-xl;
   }
-  
+
   /* Premium Gradients */
   .gradient-primary {
     background: linear-gradient(135deg, 
@@ -114,25 +113,25 @@
       hsl(var(--farm-light-green)) 50%, 
       hsl(var(--farm-sage)) 100%);
   }
-  
+
   .gradient-success {
     background: linear-gradient(135deg, 
       rgb(34, 197, 94) 0%, 
       rgb(132, 204, 22) 100%);
   }
-  
+
   .gradient-warning {
     background: linear-gradient(135deg, 
       rgb(245, 158, 11) 0%, 
       rgb(255, 193, 8) 100%);
   }
-  
+
   .gradient-danger {
     background: linear-gradient(135deg, 
       rgb(239, 68, 68) 0%, 
       rgb(220, 38, 38) 100%);
   }
-  
+
   .gradient-farm-hero {
     background: linear-gradient(135deg,
       hsl(var(--farm-green) / 0.1) 0%,
@@ -141,20 +140,20 @@
       hsl(var(--farm-sage) / 0.05) 75%,
       hsl(var(--farm-green) / 0.1) 100%);
   }
-  
+
   /* Farm Pattern */
   .farm-pattern {
     background-image: 
       radial-gradient(circle at 2px 2px, rgba(74, 136, 87, 0.15) 1px, transparent 0);
     background-size: 24px 24px;
   }
-  
+
   .farm-pattern-dark {
     background-image: 
       radial-gradient(circle at 2px 2px, rgba(132, 181, 145, 0.1) 1px, transparent 0);
     background-size: 24px 24px;
   }
-  
+
   /* Premium Cards */
   .premium-card {
     @apply bg-gradient-to-br from-white via-white/95 to-gray-50/50 
@@ -162,19 +161,19 @@
            backdrop-blur-sm rounded-xl hover:shadow-xl 
            hover:shadow-gray-500/10 transition-all duration-300;
   }
-  
+
   .premium-card-dark {
     @apply bg-gradient-to-br from-gray-900 via-gray-900/95 to-gray-800/50 
            border border-gray-700/50 shadow-lg shadow-black/10 
            backdrop-blur-sm rounded-xl hover:shadow-xl 
            hover:shadow-black/20 transition-all duration-300;
   }
-  
+
   /* Status Indicators */
   .status-indicator {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
-  
+
   /* Health Status Classes */
   .health-excellent {
     @apply text-green-700 bg-green-50 border-green-200 
@@ -195,48 +194,48 @@
     @apply text-red-700 bg-red-50 border-red-200 
            dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
   }
-  
+
   /* Animal Status Colors */
   .status-healthy {
     @apply text-green-700 bg-green-100 border-green-300 
            dark:text-green-300 dark:bg-green-950/30 dark:border-green-800/50;
   }
-  
+
   .status-sick {
     @apply text-red-700 bg-red-100 border-red-300 
            dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
   }
-  
+
   .status-pregnant {
     @apply text-purple-700 bg-purple-100 border-purple-300 
            dark:text-purple-300 dark:bg-purple-950/30 dark:border-purple-800/50;
   }
-  
+
   .status-quarantine {
     @apply text-yellow-700 bg-yellow-100 border-yellow-300 
            dark:text-yellow-300 dark:bg-yellow-950/30 dark:border-yellow-800/50;
   }
-  
+
   .status-active {
     @apply text-blue-700 bg-blue-100 border-blue-300 
            dark:text-blue-300 dark:bg-blue-950/30 dark:border-blue-800/50;
   }
-  
+
   .status-sold {
     @apply text-gray-700 bg-gray-100 border-gray-300 
            dark:text-gray-300 dark:bg-gray-950/30 dark:border-gray-800/50;
   }
-  
+
   .status-deceased {
     @apply text-slate-700 bg-slate-100 border-slate-300 
            dark:text-slate-300 dark:bg-slate-950/30 dark:border-slate-800/50;
   }
-  
+
   /* Interactive Elements */
   .interactive-hover {
     @apply hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer;
   }
-  
+
   .farm-button {
     @apply bg-gradient-to-r from-green-600 to-green-700 
            hover:from-green-700 hover:to-green-800 
@@ -244,7 +243,7 @@
            shadow-md hover:shadow-lg transition-all duration-200 
            focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
   }
-  
+
   .farm-button-secondary {
     @apply bg-gradient-to-r from-gray-100 to-gray-200 
            hover:from-gray-200 hover:to-gray-300 
@@ -386,11 +385,11 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
   }
-  
+
   * {
     color: black !important;
     background: white !important;
