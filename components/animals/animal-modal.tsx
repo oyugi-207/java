@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -9,234 +10,197 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Calendar, Heart, Dna, FileText, Plus, Trash2, QrCode, Nfc, Tag, Microchip } from 'lucide-react';
-import { useData, type Animal } from '@/lib/data';
-import toast from 'react-hot-toast';
+import { Calendar, QrCode, Download, Heart, MapPin, Scale, Ruler, DollarSign, Shield, Stethoscope, Utensils } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Animal, useFarmAnimals, useDataStore } from '@/lib/data';
 
 const animalSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  species: z.enum(['cow', 'pig', 'chicken', 'sheep', 'goat', 'horse']),
+  species: z.string().min(1, 'Species is required'),
   breed: z.string().min(1, 'Breed is required'),
-  gender: z.enum(['male', 'female']),
   birthDate: z.string().min(1, 'Birth date is required'),
-  weight: z.number().min(1, 'Weight must be greater than 0'),
-  location: z.string().min(1, 'Location is required'),
-  notes: z.string().optional(),
+  gender: z.enum(['male', 'female']),
   motherId: z.string().optional(),
   fatherId: z.string().optional(),
+  location: z.string().min(1, 'Location is required'),
+  weight: z.number().min(0).optional(),
+  height: z.number().min(0).optional(),
+  status: z.enum(['active', 'sold', 'deceased', 'sick', 'healthy', 'pregnant', 'quarantine']),
+  healthScore: z.number().min(0).max(100),
+  qrCode: z.string().optional(),
   rfidTag: z.string().optional(),
   earTag: z.string().optional(),
   microchipId: z.string().optional(),
-  purchaseDate: z.string().optional(),
-  purchasePrice: z.number().optional(),
-  supplier: z.string().optional(),
-  insurance: z.string().optional(),
-  veterinarian: z.string().optional(),
   color: z.string().optional(),
   markings: z.string().optional(),
-  registrationNumber: z.string().optional(),
-  previousOwner: z.string().optional(),
+  purpose: z.enum(['dairy', 'meat', 'breeding', 'pets', 'work', 'other']),
+  acquisitionDate: z.string().optional(),
+  acquisitionCost: z.number().min(0).optional(),
+  currentValue: z.number().min(0).optional(),
+  insurance: z.boolean().optional(),
+  insuranceProvider: z.string().optional(),
+  veterinarian: z.string().optional(),
+  feedType: z.string().optional(),
+  feedSchedule: z.string().optional(),
   medicalHistory: z.string().optional(),
+  notes: z.string().optional(),
 });
 
-type AnimalForm = z.infer<typeof animalSchema>;
+type AnimalFormData = z.infer<typeof animalSchema>;
 
 interface AnimalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  animal?: Animal | null;
+  animal?: Animal;
 }
 
 export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
-  const { animals, addAnimal, updateAnimal, deleteAnimal } = useData();
+  const animals = useFarmAnimals();
+  const { addAnimal, updateAnimal } = useDataStore();
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+
   const isEditing = !!animal;
 
-  const form = useForm<AnimalForm>({
+  const form = useForm<AnimalFormData>({
     resolver: zodResolver(animalSchema),
     defaultValues: {
       name: '',
-      species: 'cow',
+      species: '',
       breed: '',
-      gender: 'female',
       birthDate: '',
-      weight: 0,
+      gender: 'female',
       location: '',
-      notes: '',
-      motherId: 'none',
-      fatherId: 'none',
+      weight: undefined,
+      height: undefined,
+      status: 'healthy',
+      healthScore: 100,
+      purpose: 'other',
+      insurance: false,
+      qrCode: '',
       rfidTag: '',
       earTag: '',
       microchipId: '',
-      purchaseDate: '',
-      purchasePrice: 0,
-      supplier: '',
-      insurance: '',
-      veterinarian: '',
       color: '',
       markings: '',
-      registrationNumber: '',
-      previousOwner: '',
+      acquisitionDate: '',
+      acquisitionCost: undefined,
+      currentValue: undefined,
+      insuranceProvider: '',
+      veterinarian: '',
+      feedType: '',
+      feedSchedule: '',
       medicalHistory: '',
+      notes: '',
     },
   });
 
   useEffect(() => {
-    if (animal) {
+    if (animal && isEditing) {
       form.reset({
         name: animal.name,
         species: animal.species,
         breed: animal.breed,
-        gender: animal.gender,
         birthDate: animal.birthDate,
-        weight: animal.weight,
+        gender: animal.gender,
+        motherId: animal.motherId || '',
+        fatherId: animal.fatherId || '',
         location: animal.location,
-        notes: animal.notes,
-        motherId: animal.motherId || 'none',
-        fatherId: animal.fatherId || 'none',
+        weight: animal.weight,
+        height: animal.height,
+        status: animal.status,
+        healthScore: animal.healthScore,
+        qrCode: animal.qrCode || '',
         rfidTag: animal.rfidTag || '',
         earTag: animal.earTag || '',
         microchipId: animal.microchipId || '',
-        purchaseDate: '',
-        purchasePrice: 0,
-        supplier: '',
-        insurance: '',
-        veterinarian: '',
-        color: '',
-        markings: '',
-        registrationNumber: '',
-        previousOwner: '',
-        medicalHistory: '',
+        color: animal.color || '',
+        markings: animal.markings || '',
+        purpose: animal.purpose,
+        acquisitionDate: animal.acquisitionDate || '',
+        acquisitionCost: animal.acquisitionCost,
+        currentValue: animal.currentValue,
+        insurance: animal.insurance || false,
+        insuranceProvider: animal.insuranceProvider || '',
+        veterinarian: animal.veterinarian || '',
+        feedType: animal.feedType || '',
+        feedSchedule: animal.feedSchedule || '',
+        medicalHistory: animal.medicalHistory || '',
+        notes: animal.notes || '',
       });
     } else {
-      form.reset({
-        name: '',
-        species: 'cow',
-        breed: '',
-        gender: 'female',
-        birthDate: '',
-        weight: 0,
-        location: '',
-        notes: '',
-        motherId: 'none',
-        fatherId: 'none',
-        rfidTag: '',
-        earTag: '',
-        microchipId: '',
-        purchaseDate: '',
-        purchasePrice: 0,
-        supplier: '',
-        insurance: '',
-        veterinarian: '',
-        color: '',
-        markings: '',
-        registrationNumber: '',
-        previousOwner: '',
-        medicalHistory: '',
-      });
+      form.reset();
     }
-  }, [animal, form]);
+  }, [animal, isEditing, form]);
 
-  const onSubmit = (data: AnimalForm) => {
+  const onSubmit = async (data: AnimalFormData) => {
+    setIsLoading(true);
     try {
-      const processedData = {
-        ...data,
-        motherId: data.motherId === 'none' ? undefined : data.motherId,
-        fatherId: data.fatherId === 'none' ? undefined : data.fatherId,
-        rfidTag: data.rfidTag || undefined,
-        earTag: data.earTag || undefined,
-        microchipId: data.microchipId || undefined,
-        purchasePrice: data.purchasePrice || undefined,
-        purchaseDate: data.purchaseDate || undefined,
-        supplier: data.supplier || undefined,
-        insurance: data.insurance || undefined,
-        veterinarian: data.veterinarian || undefined,
-        color: data.color || undefined,
-        markings: data.markings || undefined,
-        registrationNumber: data.registrationNumber || undefined,
-        previousOwner: data.previousOwner || undefined,
-        medicalHistory: data.medicalHistory || undefined,
-      };
-
       if (isEditing && animal) {
-        updateAnimal(animal.id, {
-          ...processedData,
-          healthScore: animal.healthScore,
-          status: animal.status,
-          image: animal.image,
-          vaccinations: animal.vaccinations,
-          treatments: animal.treatments,
-          measurements: animal.measurements,
-        });
+        await updateAnimal(animal.id, data);
         toast.success('Animal updated successfully');
       } else {
-        addAnimal({
-          ...processedData,
-          healthScore: 95,
-          status: 'healthy',
-          vaccinations: [],
-          treatments: [],
-          measurements: [],
-        });
+        await addAnimal(data);
         toast.success('Animal added successfully');
       }
       onOpenChange(false);
+      form.reset();
     } catch (error) {
+      console.error('Error saving animal:', error);
       toast.error('Failed to save animal');
-    }
-  };
-
-  const handleDelete = () => {
-    if (animal && window.confirm('Are you sure you want to delete this animal?')) {
-      deleteAnimal(animal.id);
-      toast.success('Animal deleted successfully');
-      onOpenChange(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const generateQRCode = () => {
     if (!animal) return;
-    
+
     const qrData = {
       id: animal.id,
       name: animal.name,
       species: animal.species,
+      breed: animal.breed,
       rfidTag: animal.rfidTag,
       earTag: animal.earTag,
+      farmUrl: window.location.origin,
     };
 
-    // Create QR code content
     const qrContent = JSON.stringify(qrData);
     
-    // Create a downloadable QR code (simplified version)
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 200;
-    canvas.height = 200;
+    canvas.width = 300;
+    canvas.height = 300;
     
     if (ctx) {
-      // Simple QR-like pattern
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, 200, 200);
       ctx.fillStyle = '#fff';
-      ctx.font = '12px Arial';
-      ctx.fillText(animal.name, 10, 20);
-      ctx.fillText(animal.species, 10, 40);
-      ctx.fillText(`ID: ${animal.id.slice(0, 8)}`, 10, 60);
-      if (animal.rfidTag) ctx.fillText(`RFID: ${animal.rfidTag}`, 10, 80);
-      if (animal.earTag) ctx.fillText(`Ear: ${animal.earTag}`, 10, 100);
+      ctx.fillRect(0, 0, 300, 300);
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      
+      ctx.fillText(animal.name, 150, 40);
+      ctx.font = '14px Arial';
+      ctx.fillText(`${animal.species} - ${animal.breed}`, 150, 60);
+      ctx.fillText(`ID: ${animal.id.slice(0, 8)}`, 150, 80);
+      if (animal.rfidTag) ctx.fillText(`RFID: ${animal.rfidTag}`, 150, 100);
+      if (animal.earTag) ctx.fillText(`Ear Tag: ${animal.earTag}`, 150, 120);
+      
+      // Simple QR-like pattern
+      for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 10; j++) {
+          if ((i + j) % 2 === 0) {
+            ctx.fillRect(50 + i * 20, 140 + j * 15, 15, 10);
+          }
+        }
+      }
     }
 
     const link = document.createElement('a');
@@ -249,525 +213,504 @@ export function AnimalModal({ open, onOpenChange, animal }: AnimalModalProps) {
 
   const potentialParents = animals.filter(a => 
     a.id !== animal?.id && 
-    a.species === form.watch('species')
+    a.species === form.watch('species') &&
+    a.status !== 'deceased'
   );
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      healthy: 'status-healthy',
+      sick: 'status-sick',
+      pregnant: 'status-pregnant',
+      quarantine: 'status-quarantine',
+      active: 'status-active',
+      sold: 'status-sold',
+      deceased: 'status-deceased',
+    };
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? `Edit ${animal?.name}` : 'Add New Animal'}
+          <DialogTitle className="flex items-center justify-between">
+            <span className="farm-subheading">
+              {isEditing ? `Edit ${animal?.name}` : 'Add New Animal'}
+            </span>
+            {isEditing && animal && (
+              <div className="flex items-center space-x-2">
+                <Badge className={getStatusColor(animal.status)}>
+                  {animal.status}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={generateQRCode}
+                  className="no-print"
+                >
+                  <QrCode className="h-4 w-4 mr-2" />
+                  QR Code
+                </Button>
+              </div>
+            )}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="identification">ID & Tags</TabsTrigger>
-            <TabsTrigger value="physical">Physical</TabsTrigger>
-            <TabsTrigger value="health">Health</TabsTrigger>
-            <TabsTrigger value="breeding">Breeding</TabsTrigger>
-            <TabsTrigger value="records">Records</TabsTrigger>
-          </TabsList>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="identification">ID & Tags</TabsTrigger>
+              <TabsTrigger value="health">Health</TabsTrigger>
+              <TabsTrigger value="breeding">Breeding</TabsTrigger>
+              <TabsTrigger value="financial">Financial</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
+            </TabsList>
 
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <TabsContent value="basic" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    {...form.register('name')}
-                    placeholder="Enter animal name"
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="species">Species *</Label>
-                  <Select value={form.watch('species')} onValueChange={(value) => form.setValue('species', value as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cow">Cow</SelectItem>
-                      <SelectItem value="pig">Pig</SelectItem>
-                      <SelectItem value="chicken">Chicken</SelectItem>
-                      <SelectItem value="sheep">Sheep</SelectItem>
-                      <SelectItem value="goat">Goat</SelectItem>
-                      <SelectItem value="horse">Horse</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="breed">Breed *</Label>
-                  <Input
-                    id="breed"
-                    {...form.register('breed')}
-                    placeholder="Enter breed"
-                  />
-                  {form.formState.errors.breed && (
-                    <p className="text-sm text-red-500">{form.formState.errors.breed.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender *</Label>
-                  <Select value={form.watch('gender')} onValueChange={(value) => form.setValue('gender', value as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="birthDate">Birth Date *</Label>
-                  <Input
-                    id="birthDate"
-                    type="date"
-                    {...form.register('birthDate')}
-                  />
-                  {form.formState.errors.birthDate && (
-                    <p className="text-sm text-red-500">{form.formState.errors.birthDate.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (kg) *</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    {...form.register('weight', { valueAsNumber: true })}
-                    placeholder="Enter weight"
-                  />
-                  {form.formState.errors.weight && (
-                    <p className="text-sm text-red-500">{form.formState.errors.weight.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="location">Location *</Label>
-                  <Input
-                    id="location"
-                    {...form.register('location')}
-                    placeholder="Enter current location"
-                  />
-                  {form.formState.errors.location && (
-                    <p className="text-sm text-red-500">{form.formState.errors.location.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="purchaseDate">Purchase Date</Label>
-                  <Input
-                    id="purchaseDate"
-                    type="date"
-                    {...form.register('purchaseDate')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="purchasePrice">Purchase Price ($)</Label>
-                  <Input
-                    id="purchasePrice"
-                    type="number"
-                    step="0.01"
-                    {...form.register('purchasePrice', { valueAsNumber: true })}
-                    placeholder="Enter purchase price"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="supplier">Supplier</Label>
-                  <Input
-                    id="supplier"
-                    {...form.register('supplier')}
-                    placeholder="Enter supplier name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="veterinarian">Primary Veterinarian</Label>
-                  <Input
-                    id="veterinarian"
-                    {...form.register('veterinarian')}
-                    placeholder="Enter veterinarian name"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="identification" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rfidTag" className="flex items-center space-x-2">
-                    <Nfc className="h-4 w-4" />
-                    <span>RFID Tag</span>
-                  </Label>
-                  <Input
-                    id="rfidTag"
-                    {...form.register('rfidTag')}
-                    placeholder="Enter RFID tag number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="earTag" className="flex items-center space-x-2">
-                    <Tag className="h-4 w-4" />
-                    <span>Ear Tag</span>
-                  </Label>
-                  <Input
-                    id="earTag"
-                    {...form.register('earTag')}
-                    placeholder="Enter ear tag number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="microchipId" className="flex items-center space-x-2">
-                    <Microchip className="h-4 w-4" />
-                    <span>Microchip ID</span>
-                  </Label>
-                  <Input
-                    id="microchipId"
-                    {...form.register('microchipId')}
-                    placeholder="Enter microchip ID"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="registrationNumber">Registration Number</Label>
-                  <Input
-                    id="registrationNumber"
-                    {...form.register('registrationNumber')}
-                    placeholder="Enter registration number"
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="insurance">Insurance Policy</Label>
-                  <Input
-                    id="insurance"
-                    {...form.register('insurance')}
-                    placeholder="Enter insurance policy number"
-                  />
-                </div>
-              </div>
-
-              {isEditing && animal && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <QrCode className="h-5 w-5 text-blue-500" />
-                      <span>Quick Identification</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-4">
-                      <Button type="button" variant="outline" onClick={generateQRCode}>
-                        <QrCode className="h-4 w-4 mr-2" />
-                        Generate QR Code
-                      </Button>
-                      <Button type="button" variant="outline">
-                        <Nfc className="h-4 w-4 mr-2" />
-                        Print RFID Label
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="physical" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="color">Color/Coat</Label>
-                  <Input
-                    id="color"
-                    {...form.register('color')}
-                    placeholder="Enter color description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="markings">Markings</Label>
-                  <Input
-                    id="markings"
-                    {...form.register('markings')}
-                    placeholder="Enter distinctive markings"
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="previousOwner">Previous Owner</Label>
-                  <Input
-                    id="previousOwner"
-                    {...form.register('previousOwner')}
-                    placeholder="Enter previous owner information"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="health" className="space-y-6">
-              {isEditing && animal ? (
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Heart className="h-5 w-5 text-red-500" />
-                        <span>Health Overview</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Health Score</Label>
-                          <div className="text-2xl font-bold text-green-600">
-                            {animal.healthScore}%
-                          </div>
-                        </div>
-                        <div>
-                          <Label>Status</Label>
-                          <Badge className="mt-1">{animal.status}</Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+            <TabsContent value="basic" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Heart className="h-5 w-5 text-green-600" />
+                    <span>Basic Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name *</Label>
+                    <Input
+                      id="name"
+                      {...form.register('name')}
+                      className="farm-input"
+                      placeholder="Enter animal name"
+                    />
+                    {form.formState.errors.name && (
+                      <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+                    )}
+                  </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="medicalHistory">Medical History</Label>
-                    <Textarea
-                      id="medicalHistory"
-                      {...form.register('medicalHistory')}
-                      placeholder="Enter medical history and notes..."
-                      rows={4}
+                    <Label htmlFor="species">Species *</Label>
+                    <Select value={form.watch('species')} onValueChange={(value) => form.setValue('species', value)}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select species" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cattle">Cattle</SelectItem>
+                        <SelectItem value="sheep">Sheep</SelectItem>
+                        <SelectItem value="goat">Goat</SelectItem>
+                        <SelectItem value="pig">Pig</SelectItem>
+                        <SelectItem value="chicken">Chicken</SelectItem>
+                        <SelectItem value="horse">Horse</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="breed">Breed *</Label>
+                    <Input
+                      id="breed"
+                      {...form.register('breed')}
+                      className="farm-input"
+                      placeholder="Enter breed"
                     />
                   </div>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Vaccinations</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {animal.vaccinations.length > 0 ? (
-                        <div className="space-y-3">
-                          {animal.vaccinations.map((vaccination) => (
-                            <div key={vaccination.id} className="p-3 border rounded-lg">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium">{vaccination.name}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    Given: {format(new Date(vaccination.date), 'MMM dd, yyyy')}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Next due: {format(new Date(vaccination.nextDue), 'MMM dd, yyyy')}
-                                  </p>
-                                </div>
-                                <Badge variant="outline">
-                                  {vaccination.veterinarian}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">No vaccinations recorded</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Treatments</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {animal.treatments.length > 0 ? (
-                        <div className="space-y-3">
-                          {animal.treatments.map((treatment) => (
-                            <div key={treatment.id} className="p-3 border rounded-lg">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium">{treatment.condition}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    Medication: {treatment.medication}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {format(new Date(treatment.startDate), 'MMM dd, yyyy')} - 
-                                    {format(new Date(treatment.endDate), 'MMM dd, yyyy')}
-                                  </p>
-                                </div>
-                                <Badge variant={treatment.status === 'completed' ? 'default' : 'secondary'}>
-                                  {treatment.status}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">No treatments recorded</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-center py-8 text-muted-foreground">
-                    Health records will be available after the animal is created
-                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="medicalHistory">Medical History</Label>
-                    <Textarea
-                      id="medicalHistory"
-                      {...form.register('medicalHistory')}
-                      placeholder="Enter medical history and notes..."
-                      rows={4}
+                    <Label htmlFor="gender">Gender *</Label>
+                    <Select value={form.watch('gender')} onValueChange={(value) => form.setValue('gender', value as 'male' | 'female')}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="birthDate">Birth Date *</Label>
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      {...form.register('birthDate')}
+                      className="farm-input"
                     />
                   </div>
-                </div>
-              )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location *</Label>
+                    <Input
+                      id="location"
+                      {...form.register('location')}
+                      className="farm-input"
+                      placeholder="e.g., Barn A, Field 3"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="color">Color</Label>
+                    <Input
+                      id="color"
+                      {...form.register('color')}
+                      className="farm-input"
+                      placeholder="e.g., Brown, Black & White"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="markings">Markings</Label>
+                    <Input
+                      id="markings"
+                      {...form.register('markings')}
+                      className="farm-input"
+                      placeholder="Distinctive markings"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="purpose">Purpose</Label>
+                    <Select value={form.watch('purpose')} onValueChange={(value) => form.setValue('purpose', value as any)}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select purpose" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dairy">Dairy</SelectItem>
+                        <SelectItem value="meat">Meat</SelectItem>
+                        <SelectItem value="breeding">Breeding</SelectItem>
+                        <SelectItem value="pets">Pets</SelectItem>
+                        <SelectItem value="work">Work</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={form.watch('status')} onValueChange={(value) => form.setValue('status', value as any)}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="healthy">Healthy</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="sick">Sick</SelectItem>
+                        <SelectItem value="pregnant">Pregnant</SelectItem>
+                        <SelectItem value="quarantine">Quarantine</SelectItem>
+                        <SelectItem value="sold">Sold</SelectItem>
+                        <SelectItem value="deceased">Deceased</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="breeding" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="motherId">Mother</Label>
-                  <Select value={form.watch('motherId')} onValueChange={(value) => form.setValue('motherId', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select mother" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No mother selected</SelectItem>
-                      {potentialParents.filter(a => a.gender === 'female').map((parent) => (
-                        <SelectItem key={parent.id} value={parent.id}>
-                          {parent.name} ({parent.breed})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <TabsContent value="identification" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <QrCode className="h-5 w-5 text-blue-600" />
+                    <span>Identification & Tags</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="earTag">Ear Tag</Label>
+                    <Input
+                      id="earTag"
+                      {...form.register('earTag')}
+                      className="farm-input"
+                      placeholder="Ear tag number"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="fatherId">Father</Label>
-                  <Select value={form.watch('fatherId')} onValueChange={(value) => form.setValue('fatherId', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select father" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No father selected</SelectItem>
-                      {potentialParents.filter(a => a.gender === 'male').map((parent) => (
-                        <SelectItem key={parent.id} value={parent.id}>
-                          {parent.name} ({parent.breed})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rfidTag">RFID Tag</Label>
+                    <Input
+                      id="rfidTag"
+                      {...form.register('rfidTag')}
+                      className="farm-input"
+                      placeholder="RFID tag number"
+                    />
+                  </div>
 
-              {isEditing && animal && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Dna className="h-5 w-5 text-purple-500" />
-                      <span>Lineage Information</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {animal.motherId && (
-                        <div>
-                          <Label>Mother</Label>
-                          <p className="text-sm">
-                            {animals.find(a => a.id === animal.motherId)?.name || 'Unknown'}
-                          </p>
-                        </div>
-                      )}
-                      {animal.fatherId && (
-                        <div>
-                          <Label>Father</Label>
-                          <p className="text-sm">
-                            {animals.find(a => a.id === animal.fatherId)?.name || 'Unknown'}
-                          </p>
-                        </div>
-                      )}
-                      {!animal.motherId && !animal.fatherId && (
-                        <p className="text-muted-foreground">No lineage information available</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                  <div className="space-y-2">
+                    <Label htmlFor="microchipId">Microchip ID</Label>
+                    <Input
+                      id="microchipId"
+                      {...form.register('microchipId')}
+                      className="farm-input"
+                      placeholder="Microchip identifier"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="qrCode">QR Code</Label>
+                    <Input
+                      id="qrCode"
+                      {...form.register('qrCode')}
+                      className="farm-input"
+                      placeholder="QR code data"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="records" className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes & Additional Information</Label>
-                <Textarea
-                  id="notes"
-                  {...form.register('notes')}
-                  placeholder="Enter any additional notes about this animal..."
-                  rows={6}
-                />
-              </div>
-
-              {isEditing && animal && animal.measurements.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Measurements</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+            <TabsContent value="health" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Stethoscope className="h-5 w-5 text-red-600" />
+                    <span>Health Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      {animal.measurements
-                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .slice(0, 5)
-                        .map((measurement) => (
-                          <div key={measurement.id} className="flex justify-between items-center p-2 border rounded">
-                            <span className="capitalize">{measurement.type.replace('_', ' ')}</span>
-                            <span className="font-medium">
-                              {measurement.value} {measurement.unit}
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {format(new Date(measurement.date), 'MMM dd')}
-                            </span>
-                          </div>
-                        ))}
+                      <Label htmlFor="healthScore">Health Score (0-100)</Label>
+                      <Input
+                        id="healthScore"
+                        type="number"
+                        min="0"
+                        max="100"
+                        {...form.register('healthScore', { valueAsNumber: true })}
+                        className="farm-input"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="weight">Weight (kg)</Label>
+                      <Input
+                        id="weight"
+                        type="number"
+                        step="0.1"
+                        {...form.register('weight', { valueAsNumber: true })}
+                        className="farm-input"
+                        placeholder="Weight in kg"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="height">Height (cm)</Label>
+                      <Input
+                        id="height"
+                        type="number"
+                        step="0.1"
+                        {...form.register('height', { valueAsNumber: true })}
+                        className="farm-input"
+                        placeholder="Height in cm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="veterinarian">Veterinarian</Label>
+                    <Input
+                      id="veterinarian"
+                      {...form.register('veterinarian')}
+                      className="farm-input"
+                      placeholder="Primary veterinarian"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="medicalHistory">Medical History</Label>
+                    <Textarea
+                      id="medicalHistory"
+                      {...form.register('medicalHistory')}
+                      className="farm-input min-h-[100px]"
+                      placeholder="Medical history, treatments, vaccinations..."
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <Separator className="my-6" />
+            <TabsContent value="breeding" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Heart className="h-5 w-5 text-pink-600" />
+                    <span>Breeding Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="motherId">Mother</Label>
+                    <Select value={form.watch('motherId')} onValueChange={(value) => form.setValue('motherId', value)}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select mother" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {potentialParents
+                          .filter(a => a.gender === 'female')
+                          .map((animal) => (
+                            <SelectItem key={animal.id} value={animal.id}>
+                              {animal.name} ({animal.breed})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <div className="flex justify-between">
-              <div>
-                {isEditing && (
-                  <Button type="button" variant="destructive" onClick={handleDelete}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Animal
-                  </Button>
-                )}
-              </div>
-              <div className="flex space-x-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {isEditing ? 'Update Animal' : 'Add Animal'}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Tabs>
+                  <div className="space-y-2">
+                    <Label htmlFor="fatherId">Father</Label>
+                    <Select value={form.watch('fatherId')} onValueChange={(value) => form.setValue('fatherId', value)}>
+                      <SelectTrigger className="farm-select">
+                        <SelectValue placeholder="Select father" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {potentialParents
+                          .filter(a => a.gender === 'male')
+                          .map((animal) => (
+                            <SelectItem key={animal.id} value={animal.id}>
+                              {animal.name} ({animal.breed})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="financial" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <span>Financial Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="acquisitionDate">Acquisition Date</Label>
+                      <Input
+                        id="acquisitionDate"
+                        type="date"
+                        {...form.register('acquisitionDate')}
+                        className="farm-input"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="acquisitionCost">Acquisition Cost</Label>
+                      <Input
+                        id="acquisitionCost"
+                        type="number"
+                        step="0.01"
+                        {...form.register('acquisitionCost', { valueAsNumber: true })}
+                        className="farm-input"
+                        placeholder="Purchase price"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="currentValue">Current Value</Label>
+                      <Input
+                        id="currentValue"
+                        type="number"
+                        step="0.01"
+                        {...form.register('currentValue', { valueAsNumber: true })}
+                        className="farm-input"
+                        placeholder="Current estimated value"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="insuranceProvider">Insurance Provider</Label>
+                      <Input
+                        id="insuranceProvider"
+                        {...form.register('insuranceProvider')}
+                        className="farm-input"
+                        placeholder="Insurance company"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={form.watch('insurance')}
+                      onCheckedChange={(checked) => form.setValue('insurance', checked)}
+                    />
+                    <Label className="text-sm">Animal is insured</Label>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notes" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Utensils className="h-5 w-5 text-orange-600" />
+                    <span>Care & Notes</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="feedType">Feed Type</Label>
+                      <Input
+                        id="feedType"
+                        {...form.register('feedType')}
+                        className="farm-input"
+                        placeholder="Type of feed"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="feedSchedule">Feed Schedule</Label>
+                      <Input
+                        id="feedSchedule"
+                        {...form.register('feedSchedule')}
+                        className="farm-input"
+                        placeholder="e.g., 3x daily, morning/evening"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Textarea
+                      id="notes"
+                      {...form.register('notes')}
+                      className="farm-input min-h-[120px]"
+                      placeholder="Any additional notes, behaviors, special care instructions..."
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end space-x-2 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="farm-button"
+            >
+              {isLoading ? 'Saving...' : isEditing ? 'Update Animal' : 'Add Animal'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

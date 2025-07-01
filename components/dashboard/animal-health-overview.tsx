@@ -1,14 +1,15 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Heart, AlertTriangle, Activity, TrendingUp } from 'lucide-react';
+import { Heart, AlertTriangle, Activity, TrendingUp, Shield, Thermometer } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useFarmAnimals } from '@/lib/data';
+import { useFarmAnimals, useDataStore } from '@/lib/data';
 
 export function AnimalHealthOverview() {
-  const { animals } = useFarmAnimals();
+  const animals = useFarmAnimals();
 
   const healthStats = animals.reduce(
     (acc, animal) => {
@@ -16,9 +17,25 @@ export function AnimalHealthOverview() {
       else if (animal.healthScore >= 75) acc.good++;
       else if (animal.healthScore >= 60) acc.fair++;
       else acc.poor++;
+      
+      // Status counting
+      if (animal.status === 'healthy') acc.healthy++;
+      else if (animal.status === 'sick') acc.sick++;
+      else if (animal.status === 'pregnant') acc.pregnant++;
+      else if (animal.status === 'quarantine') acc.quarantine++;
+      
       return acc;
     },
-    { excellent: 0, good: 0, fair: 0, poor: 0 }
+    { 
+      excellent: 0, 
+      good: 0, 
+      fair: 0, 
+      poor: 0,
+      healthy: 0,
+      sick: 0,
+      pregnant: 0,
+      quarantine: 0
+    }
   );
 
   const totalAnimals = animals.length;
@@ -27,120 +44,189 @@ export function AnimalHealthOverview() {
     : 0;
 
   const criticalAnimals = animals.filter(animal => animal.healthScore < 60).length;
+  const needsAttention = animals.filter(animal => 
+    animal.status === 'sick' || 
+    animal.healthScore < 70 || 
+    animal.status === 'quarantine'
+  ).length;
 
-  const healthData = [
-    { label: 'Excellent', count: healthStats.excellent, color: 'bg-emerald-500', percentage: (healthStats.excellent / totalAnimals) * 100 },
-    { label: 'Good', count: healthStats.good, color: 'bg-green-500', percentage: (healthStats.good / totalAnimals) * 100 },
-    { label: 'Fair', count: healthStats.fair, color: 'bg-yellow-500', percentage: (healthStats.fair / totalAnimals) * 100 },
-    { label: 'Needs Attention', count: healthStats.poor, color: 'bg-red-500', percentage: (healthStats.poor / totalAnimals) * 100 },
+  const healthDistribution = [
+    { 
+      label: 'Excellent (90%+)', 
+      count: healthStats.excellent, 
+      color: 'bg-green-500',
+      percentage: totalAnimals > 0 ? (healthStats.excellent / totalAnimals) * 100 : 0
+    },
+    { 
+      label: 'Good (75-89%)', 
+      count: healthStats.good, 
+      color: 'bg-emerald-500',
+      percentage: totalAnimals > 0 ? (healthStats.good / totalAnimals) * 100 : 0
+    },
+    { 
+      label: 'Fair (60-74%)', 
+      count: healthStats.fair, 
+      color: 'bg-yellow-500',
+      percentage: totalAnimals > 0 ? (healthStats.fair / totalAnimals) * 100 : 0
+    },
+    { 
+      label: 'Poor (<60%)', 
+      count: healthStats.poor, 
+      color: 'bg-red-500',
+      percentage: totalAnimals > 0 ? (healthStats.poor / totalAnimals) * 100 : 0
+    }
   ];
 
   return (
-    <Card className="relative overflow-hidden backdrop-blur-sm bg-white/50 dark:bg-gray-900/50 border-white/20 dark:border-gray-700/50 shadow-xl">
+    <Card className="premium-card hover:shadow-farm transition-all duration-300">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 dark:bg-red-950/50 rounded-lg">
-              <Heart className="h-5 w-5 text-red-600" />
+            <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-950/50 dark:to-emerald-950/50 rounded-lg">
+              <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
-            <span>Animal Health Overview</span>
+            <span className="farm-subheading">Animal Health Overview</span>
           </CardTitle>
-          <Badge 
-            variant={criticalAnimals > 0 ? "destructive" : "secondary"}
-            className={criticalAnimals > 0 ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}
-          >
+          <div className="flex items-center space-x-2">
             {criticalAnimals > 0 ? (
-              <>
+              <Badge variant="destructive" className="health-critical">
                 <AlertTriangle className="h-4 w-4 mr-1" />
                 {criticalAnimals} Critical
-              </>
+              </Badge>
+            ) : needsAttention > 0 ? (
+              <Badge variant="outline" className="health-warning">
+                <Shield className="h-4 w-4 mr-1" />
+                {needsAttention} Need Attention
+              </Badge>
             ) : (
-              <>
+              <Badge variant="outline" className="health-excellent">
                 <Activity className="h-4 w-4 mr-1" />
                 All Healthy
-              </>
+              </Badge>
             )}
-          </Badge>
+          </div>
         </div>
       </CardHeader>
+      
       <CardContent className="space-y-6">
         {/* Overall Health Score */}
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border border-green-200 dark:border-green-800/50"
+        >
           <div>
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Average Health Score</p>
-            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{avgHealthScore}%</p>
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">Average Health Score</p>
+            <div className="flex items-center space-x-2 mt-1">
+              <span className="text-2xl font-bold text-green-800 dark:text-green-200">
+                {avgHealthScore}%
+              </span>
+              <TrendingUp className="h-5 w-5 text-green-600" />
+            </div>
           </div>
-          <div className="flex items-center text-emerald-600">
-            <TrendingUp className="h-5 w-5 mr-1" />
-            <span className="text-sm font-medium">+5% vs last month</span>
+          <div className="text-right">
+            <p className="text-xs text-green-600 dark:text-green-400 mb-1">
+              {totalAnimals} Total Animals
+            </p>
+            <Progress 
+              value={avgHealthScore} 
+              className="w-20 h-2 bg-green-100 dark:bg-green-900/50"
+            />
           </div>
-        </div>
+        </motion.div>
 
         {/* Health Distribution */}
-        <div className="space-y-4">
-          <h4 className="font-medium text-gray-900 dark:text-white">Health Distribution</h4>
-          {healthData.map((item, index) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="space-y-2"
-            >
-              <div className="flex items-center justify-between">
+        <div className="space-y-3">
+          <h4 className="font-medium text-gray-800 dark:text-gray-200">Health Distribution</h4>
+          <div className="space-y-2">
+            {healthDistribution.map((item, index) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {item.count} animals
-                  </span>
-                  <span className="text-xs font-medium text-gray-500">
-                    ({item.percentage.toFixed(1)}%)
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {item.label}
                   </span>
                 </div>
-              </div>
-              <Progress 
-                value={item.percentage} 
-                className="h-2"
-                style={{
-                  background: `linear-gradient(to right, ${item.color.replace('bg-', '')} 0%, ${item.color.replace('bg-', '')} ${item.percentage}%, #e5e7eb ${item.percentage}%, #e5e7eb 100%)`
-                }}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Recent Health Alerts */}
-        <div className="space-y-3">
-          <h4 className="font-medium text-gray-900 dark:text-white">Recent Health Events</h4>
-          <div className="space-y-2">
-            {animals
-              .filter(animal => animal.healthScore < 75)
-              .slice(0, 3)
-              .map((animal, index) => (
-                <motion.div
-                  key={animal.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1, duration: 0.3 }}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                    <div>
-                      <p className="text-sm font-medium">{animal.name || `Animal #${animal.tagId}`}</p>
-                      <p className="text-xs text-gray-500">Health Score: {animal.healthScore}%</p>
-                    </div>
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {item.count}
+                  </span>
                   <Badge variant="outline" className="text-xs">
-                    {animal.species}
+                    {item.percentage.toFixed(1)}%
                   </Badge>
-                </motion.div>
-              ))}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
+
+        {/* Status Overview */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800/50">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Healthy</span>
+              <span className="text-lg font-bold text-blue-800 dark:text-blue-200">
+                {healthStats.healthy}
+              </span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800/50">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Pregnant</span>
+              <span className="text-lg font-bold text-purple-800 dark:text-purple-200">
+                {healthStats.pregnant}
+              </span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800/50">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-red-700 dark:text-red-300">Sick</span>
+              <span className="text-lg font-bold text-red-800 dark:text-red-200">
+                {healthStats.sick}
+              </span>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800/50">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Quarantine</span>
+              <span className="text-lg font-bold text-yellow-800 dark:text-yellow-200">
+                {healthStats.quarantine}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        {needsAttention > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+            className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800/50"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Thermometer className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                  Action Required
+                </span>
+              </div>
+              <span className="text-xs text-orange-600 dark:text-orange-400">
+                {needsAttention} animals need attention
+              </span>
+            </div>
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );

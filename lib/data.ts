@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAuth } from './auth';
@@ -17,9 +18,25 @@ export interface Animal {
   healthScore: number;
   location: string;
   weight?: number;
-  status: 'active' | 'sold' | 'deceased';
+  height?: number;
+  status: 'active' | 'sold' | 'deceased' | 'sick' | 'healthy' | 'pregnant' | 'quarantine';
   qrCode?: string;
   rfidTag?: string;
+  earTag?: string;
+  microchipId?: string;
+  color?: string;
+  markings?: string;
+  purpose: 'dairy' | 'meat' | 'breeding' | 'pets' | 'work' | 'other';
+  acquisitionDate?: string;
+  acquisitionCost?: number;
+  currentValue?: number;
+  insurance?: boolean;
+  insuranceProvider?: string;
+  veterinarian?: string;
+  feedType?: string;
+  feedSchedule?: string;
+  medicalHistory?: string;
+  notes?: string;
   measurements: Measurement[];
   createdAt: string;
   updatedAt: string;
@@ -196,11 +213,11 @@ interface DataState {
 
 // Helper function to get current farm ID
 const getCurrentFarmId = (): string => {
-  const { user } = useAuth.getState();
-  if (!user?.farmId) {
+  const authState = useAuth.getState();
+  if (!authState.user?.farmId) {
     throw new Error('No authenticated user or farm ID');
   }
-  return user.farmId;
+  return authState.user.farmId;
 };
 
 // Transform Supabase data to local types
@@ -214,12 +231,28 @@ const transformSupabaseAnimal = (supabaseAnimal: any): Animal => ({
   gender: supabaseAnimal.gender,
   motherId: supabaseAnimal.mother_id,
   fatherId: supabaseAnimal.father_id,
-  healthScore: supabaseAnimal.health_score,
+  healthScore: supabaseAnimal.health_score || 85,
   location: supabaseAnimal.location,
   weight: supabaseAnimal.weight,
-  status: supabaseAnimal.status,
+  height: supabaseAnimal.height,
+  status: supabaseAnimal.status || 'healthy',
   qrCode: supabaseAnimal.qr_code,
   rfidTag: supabaseAnimal.rfid_tag,
+  earTag: supabaseAnimal.ear_tag,
+  microchipId: supabaseAnimal.microchip_id,
+  color: supabaseAnimal.color,
+  markings: supabaseAnimal.markings,
+  purpose: supabaseAnimal.purpose || 'other',
+  acquisitionDate: supabaseAnimal.acquisition_date,
+  acquisitionCost: supabaseAnimal.acquisition_cost,
+  currentValue: supabaseAnimal.current_value,
+  insurance: supabaseAnimal.insurance || false,
+  insuranceProvider: supabaseAnimal.insurance_provider,
+  veterinarian: supabaseAnimal.veterinarian,
+  feedType: supabaseAnimal.feed_type,
+  feedSchedule: supabaseAnimal.feed_schedule,
+  medicalHistory: supabaseAnimal.medical_history,
+  notes: supabaseAnimal.notes,
   measurements: [], // Initialize empty, can be loaded separately
   createdAt: supabaseAnimal.created_at,
   updatedAt: supabaseAnimal.updated_at,
@@ -313,9 +346,25 @@ export const useDataStore = create<DataState>()(
             health_score: animalData.healthScore,
             location: animalData.location,
             weight: animalData.weight,
+            height: animalData.height,
             status: animalData.status,
             qr_code: animalData.qrCode,
             rfid_tag: animalData.rfidTag,
+            ear_tag: animalData.earTag,
+            microchip_id: animalData.microchipId,
+            color: animalData.color,
+            markings: animalData.markings,
+            purpose: animalData.purpose,
+            acquisition_date: animalData.acquisitionDate,
+            acquisition_cost: animalData.acquisitionCost,
+            current_value: animalData.currentValue,
+            insurance: animalData.insurance,
+            insurance_provider: animalData.insuranceProvider,
+            veterinarian: animalData.veterinarian,
+            feed_type: animalData.feedType,
+            feed_schedule: animalData.feedSchedule,
+            medical_history: animalData.medicalHistory,
+            notes: animalData.notes,
           });
 
           const transformedAnimal = transformSupabaseAnimal(newAnimal);
@@ -339,9 +388,25 @@ export const useDataStore = create<DataState>()(
           if (animalData.healthScore !== undefined) updateData.health_score = animalData.healthScore;
           if (animalData.location) updateData.location = animalData.location;
           if (animalData.weight !== undefined) updateData.weight = animalData.weight;
+          if (animalData.height !== undefined) updateData.height = animalData.height;
           if (animalData.status) updateData.status = animalData.status;
           if (animalData.qrCode) updateData.qr_code = animalData.qrCode;
           if (animalData.rfidTag) updateData.rfid_tag = animalData.rfidTag;
+          if (animalData.earTag) updateData.ear_tag = animalData.earTag;
+          if (animalData.microchipId) updateData.microchip_id = animalData.microchipId;
+          if (animalData.color) updateData.color = animalData.color;
+          if (animalData.markings) updateData.markings = animalData.markings;
+          if (animalData.purpose) updateData.purpose = animalData.purpose;
+          if (animalData.acquisitionDate) updateData.acquisition_date = animalData.acquisitionDate;
+          if (animalData.acquisitionCost !== undefined) updateData.acquisition_cost = animalData.acquisitionCost;
+          if (animalData.currentValue !== undefined) updateData.current_value = animalData.currentValue;
+          if (animalData.insurance !== undefined) updateData.insurance = animalData.insurance;
+          if (animalData.insuranceProvider) updateData.insurance_provider = animalData.insuranceProvider;
+          if (animalData.veterinarian) updateData.veterinarian = animalData.veterinarian;
+          if (animalData.feedType) updateData.feed_type = animalData.feedType;
+          if (animalData.feedSchedule) updateData.feed_schedule = animalData.feedSchedule;
+          if (animalData.medicalHistory) updateData.medical_history = animalData.medicalHistory;
+          if (animalData.notes) updateData.notes = animalData.notes;
 
           const updatedAnimal = await dataService.updateAnimal(id, updateData);
           const transformedAnimal = transformSupabaseAnimal(updatedAnimal);
@@ -683,7 +748,7 @@ export const useDataStore = create<DataState>()(
     }),
     {
       name: 'agroinsight-data-storage',
-      version: 7,
+      version: 8,
       migrate: (persistedState: any) => {
         return persistedState;
       },
@@ -694,40 +759,38 @@ export const useDataStore = create<DataState>()(
 // Create filtered data hooks for the current user's farm
 export const useFarmData = () => {
   const store = useDataStore();
-  const farmId = getCurrentFarmId();
-
-  if (!farmId) {
+  
+  try {
+    const farmId = getCurrentFarmId();
+    
+    return {
+      ...store,
+      animals: store.animals.filter(animal => animal.farmId === farmId),
+      tasks: store.tasks.filter(task => task.farmId === farmId),
+      inventory: store.inventory.filter(item => item.farmId === farmId),
+      healthRecords: store.healthRecords.filter(record => record.farm_id === farmId),
+      feedingRecords: store.feedingRecords.filter(record => record.farm_id === farmId),
+      breedingRecords: store.breedingRecords.filter(record => record.farm_id === farmId),
+      productionRecords: store.productionRecords.filter(record => record.farm_id === farmId),
+      staff: store.staff.filter(member => member.farm_id === farmId),
+    };
+  } catch (error) {
     return store;
   }
-
-  return {
-    ...store,
-    animals: store.animals.filter(animal => animal.farmId === farmId),
-    tasks: store.tasks.filter(task => task.farmId === farmId),
-    inventory: store.inventory.filter(item => item.farmId === farmId),
-    healthRecords: store.healthRecords.filter(record => record.farm_id === farmId),
-    feedingRecords: store.feedingRecords.filter(record => record.farm_id === farmId),
-    breedingRecords: store.breedingRecords.filter(record => record.farm_id === farmId),
-    productionRecords: store.productionRecords.filter(record => record.farm_id === farmId),
-    staff: store.staff.filter(member => member.farm_id === farmId),
-  };
 };
 
 // Specific hooks for different data types
 export const useFarmAnimals = () => {
-  const store = useDataStore();
-  const farmId = getCurrentFarmId();
-  return store.animals.filter(animal => animal.farmId === farmId);
+  const data = useFarmData();
+  return data.animals;
 };
 
 export const useFarmTasks = () => {
-  const store = useDataStore();
-  const farmId = getCurrentFarmId();
-  return store.tasks.filter(task => task.farmId === farmId);
+  const data = useFarmData();
+  return data.tasks;
 };
 
 export const useFarmInventory = () => {
-  const store = useDataStore();
-  const farmId = getCurrentFarmId();
-  return store.inventory.filter(item => item.farmId === farmId);
+  const data = useFarmData();
+  return data.inventory;
 };

@@ -1,84 +1,84 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
-    --chart-1: 142 76% 36%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* Primary Farm Theme Colors */
+    --background: 247 251 248;
+    --foreground: 20 37 26;
+    --card: 255 255 255;
+    --card-foreground: 20 37 26;
+    --popover: 255 255 255;
+    --popover-foreground: 20 37 26;
+    --primary: 74 136 87;
+    --primary-foreground: 255 255 255;
+    --secondary: 132 181 145;
+    --secondary-foreground: 20 37 26;
+    --muted: 241 248 243;
+    --muted-foreground: 107 114 128;
+    --accent: 132 181 145;
+    --accent-foreground: 20 37 26;
+    --destructive: 220 38 38;
+    --destructive-foreground: 255 255 255;
+    --border: 226 240 231;
+    --input: 226 240 231;
+    --ring: 74 136 87;
     --radius: 0.75rem;
     
-    /* Custom farm theme colors */
-    --success: 142 76% 36%;
-    --warning: 43 96% 56%;
-    --info: 213 94% 68%;
-    --health-excellent: 142 76% 36%;
-    --health-good: 79 81% 56%;
-    --health-warning: 43 96% 56%;
-    --health-critical: 0 84% 60%;
+    /* Chart Colors */
+    --chart-1: 74 136 87;
+    --chart-2: 132 181 145;
+    --chart-3: 194 220 201;
+    --chart-4: 255 193 8;
+    --chart-5: 255 125 0;
+    
+    /* Status Colors */
+    --success: 34 197 94;
+    --warning: 245 158 11;
+    --info: 59 130 246;
+    --health-excellent: 34 197 94;
+    --health-good: 132 204 22;
+    --health-warning: 245 158 11;
+    --health-critical: 239 68 68;
+    
+    /* Brand Colors */
+    --farm-green: 74 136 87;
+    --farm-light-green: 132 181 145;
+    --farm-sage: 149 169 142;
+    --farm-beige: 241 235 220;
+    --farm-brown: 121 85 72;
+    --farm-gold: 255 193 8;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
-    --chart-1: 142 76% 36%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 13 20 16;
+    --foreground: 240 248 242;
+    --card: 20 30 23;
+    --card-foreground: 240 248 242;
+    --popover: 20 30 23;
+    --popover-foreground: 240 248 242;
+    --primary: 132 181 145;
+    --primary-foreground: 13 20 16;
+    --secondary: 74 136 87;
+    --secondary-foreground: 240 248 242;
+    --muted: 26 40 30;
+    --muted-foreground: 156 163 175;
+    --accent: 74 136 87;
+    --accent-foreground: 240 248 242;
+    --destructive: 185 28 28;
+    --destructive-foreground: 240 248 242;
+    --border: 40 60 46;
+    --input: 40 60 46;
+    --ring: 132 181 145;
+    
+    /* Chart Colors - Dark */
+    --chart-1: 132 181 145;
+    --chart-2: 74 136 87;
+    --chart-3: 48 86 54;
+    --chart-4: 255 193 8;
+    --chart-5: 255 125 0;
   }
 }
 
@@ -86,65 +86,213 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    scroll-behavior: smooth;
   }
 }
 
 @layer components {
+  /* Glass Effects */
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+    @apply bg-white/80 backdrop-blur-lg border border-white/30 shadow-xl;
   }
   
   .glass-dark {
-    @apply bg-gray-900/10 backdrop-blur-md border border-gray-700/20 shadow-xl;
+    @apply bg-gray-900/80 backdrop-blur-lg border border-gray-700/30 shadow-xl;
   }
   
+  /* Premium Gradients */
   .gradient-primary {
-    @apply bg-gradient-to-br from-primary via-primary/90 to-primary/80;
+    background: linear-gradient(135deg, 
+      hsl(var(--farm-green)) 0%, 
+      hsl(var(--farm-light-green)) 50%, 
+      hsl(var(--farm-sage)) 100%);
   }
   
   .gradient-success {
-    @apply bg-gradient-to-br from-green-500 via-green-600 to-green-700;
+    background: linear-gradient(135deg, 
+      rgb(34, 197, 94) 0%, 
+      rgb(132, 204, 22) 100%);
   }
   
   .gradient-warning {
-    @apply bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600;
+    background: linear-gradient(135deg, 
+      rgb(245, 158, 11) 0%, 
+      rgb(255, 193, 8) 100%);
   }
   
   .gradient-danger {
-    @apply bg-gradient-to-br from-red-500 via-red-600 to-red-700;
+    background: linear-gradient(135deg, 
+      rgb(239, 68, 68) 0%, 
+      rgb(220, 38, 38) 100%);
   }
   
+  .gradient-farm-hero {
+    background: linear-gradient(135deg,
+      hsl(var(--farm-green) / 0.1) 0%,
+      hsl(var(--farm-light-green) / 0.05) 25%,
+      hsl(var(--farm-beige) / 0.1) 50%,
+      hsl(var(--farm-sage) / 0.05) 75%,
+      hsl(var(--farm-green) / 0.1) 100%);
+  }
+  
+  /* Farm Pattern */
   .farm-pattern {
     background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
-    background-size: 20px 20px;
+      radial-gradient(circle at 2px 2px, rgba(74, 136, 87, 0.15) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  
+  .farm-pattern-dark {
+    background-image: 
+      radial-gradient(circle at 2px 2px, rgba(132, 181, 145, 0.1) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  
+  /* Premium Cards */
+  .premium-card {
+    @apply bg-gradient-to-br from-white via-white/95 to-gray-50/50 
+           border border-gray-200/50 shadow-lg shadow-gray-500/5 
+           backdrop-blur-sm rounded-xl hover:shadow-xl 
+           hover:shadow-gray-500/10 transition-all duration-300;
+  }
+  
+  .premium-card-dark {
+    @apply bg-gradient-to-br from-gray-900 via-gray-900/95 to-gray-800/50 
+           border border-gray-700/50 shadow-lg shadow-black/10 
+           backdrop-blur-sm rounded-xl hover:shadow-xl 
+           hover:shadow-black/20 transition-all duration-300;
+  }
+  
+  /* Status Indicators */
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  /* Health Status Classes */
+  .health-excellent {
+    @apply text-green-700 bg-green-50 border-green-200 
+           dark:text-green-300 dark:bg-green-950/30 dark:border-green-800/50;
+  }
+
+  .health-good {
+    @apply text-emerald-700 bg-emerald-50 border-emerald-200 
+           dark:text-emerald-300 dark:bg-emerald-950/30 dark:border-emerald-800/50;
+  }
+
+  .health-warning {
+    @apply text-amber-700 bg-amber-50 border-amber-200 
+           dark:text-amber-300 dark:bg-amber-950/30 dark:border-amber-800/50;
+  }
+
+  .health-critical {
+    @apply text-red-700 bg-red-50 border-red-200 
+           dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
+  }
+  
+  /* Animal Status Colors */
+  .status-healthy {
+    @apply text-green-700 bg-green-100 border-green-300 
+           dark:text-green-300 dark:bg-green-950/30 dark:border-green-800/50;
+  }
+  
+  .status-sick {
+    @apply text-red-700 bg-red-100 border-red-300 
+           dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
+  }
+  
+  .status-pregnant {
+    @apply text-purple-700 bg-purple-100 border-purple-300 
+           dark:text-purple-300 dark:bg-purple-950/30 dark:border-purple-800/50;
+  }
+  
+  .status-quarantine {
+    @apply text-yellow-700 bg-yellow-100 border-yellow-300 
+           dark:text-yellow-300 dark:bg-yellow-950/30 dark:border-yellow-800/50;
+  }
+  
+  .status-active {
+    @apply text-blue-700 bg-blue-100 border-blue-300 
+           dark:text-blue-300 dark:bg-blue-950/30 dark:border-blue-800/50;
+  }
+  
+  .status-sold {
+    @apply text-gray-700 bg-gray-100 border-gray-300 
+           dark:text-gray-300 dark:bg-gray-950/30 dark:border-gray-800/50;
+  }
+  
+  .status-deceased {
+    @apply text-slate-700 bg-slate-100 border-slate-300 
+           dark:text-slate-300 dark:bg-slate-950/30 dark:border-slate-800/50;
+  }
+  
+  /* Interactive Elements */
+  .interactive-hover {
+    @apply hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer;
+  }
+  
+  .farm-button {
+    @apply bg-gradient-to-r from-green-600 to-green-700 
+           hover:from-green-700 hover:to-green-800 
+           text-white font-medium py-2 px-4 rounded-lg 
+           shadow-md hover:shadow-lg transition-all duration-200 
+           focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+  
+  .farm-button-secondary {
+    @apply bg-gradient-to-r from-gray-100 to-gray-200 
+           hover:from-gray-200 hover:to-gray-300 
+           text-gray-800 font-medium py-2 px-4 rounded-lg 
+           border border-gray-300 shadow-sm hover:shadow-md 
+           transition-all duration-200 focus:ring-2 
+           focus:ring-gray-500 focus:ring-offset-2;
   }
 }
 
-.health-excellent {
-  @apply text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/50 dark:border-green-800;
-}
-
-.health-good {
-  @apply text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/50 dark:border-emerald-800;
-}
-
-.health-warning {
-  @apply text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950/50 dark:border-yellow-800;
-}
-
-.health-critical {
-  @apply text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/50 dark:border-red-800;
-}
-
+/* Custom Animations */
 @keyframes pulse-slow {
   0%, 100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -152,21 +300,98 @@
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
-/* Custom scrollbar */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+/* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
-  border-radius: 4px;
+  @apply bg-gray-100 dark:bg-gray-800 rounded-md;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600;
-  border-radius: 4px;
+  @apply bg-gray-300 dark:bg-gray-600 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
+/* Form Styling */
+.farm-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
+         focus:ring-2 focus:ring-green-500 focus:border-green-500 
+         bg-white dark:bg-gray-800 dark:border-gray-600 
+         dark:focus:ring-green-400 dark:focus:border-green-400 
+         transition-colors duration-200;
+}
+
+.farm-select {
+  @apply farm-input appearance-none bg-no-repeat bg-right bg-[length:16px] 
+         bg-[url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")];
+}
+
+/* Typography */
+.farm-heading {
+  @apply text-2xl font-bold text-gray-900 dark:text-white mb-6;
+}
+
+.farm-subheading {
+  @apply text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4;
+}
+
+.farm-text {
+  @apply text-gray-600 dark:text-gray-300 leading-relaxed;
+}
+
+/* Responsive Grid Layouts */
+.farm-grid {
+  @apply grid gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.farm-grid-tight {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Loading States */
+.loading-shimmer {
+  @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 
+         dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded;
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  * {
+    color: black !important;
+    background: white !important;
+  }
 }
