@@ -39,7 +39,7 @@ interface AuthModalProps {
 export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, register } = useAuth();
+  const { login, register, loading } = useAuth();
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
