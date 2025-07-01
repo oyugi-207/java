@@ -16,13 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, Heart, Calendar, Dna, Baby, TrendingUp } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import { BreedingModal } from '@/components/breeding/breeding-modal';
 import { motion } from 'framer-motion';
 import { format, differenceInDays } from 'date-fns';
 
 export default function BreedingPage() {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [speciesFilter, setSpeciesFilter] = useState('all');
   const [breedingModalOpen, setBreedingModalOpen] = useState(false);

@@ -38,7 +38,7 @@ interface FeedingModalProps {
 }
 
 export function FeedingModal({ open, onOpenChange, animal }: FeedingModalProps) {
-  const { animals, addFeedingRecord } = useData();
+  const { animals, addFeedingRecord } = useFarmData();
 
   const form = useForm<FeedingRecordForm>({
     resolver: zodResolver(feedingRecordSchema),

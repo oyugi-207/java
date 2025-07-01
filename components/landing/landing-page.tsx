@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -155,7 +154,7 @@ export default function LandingPage() {
               </div>
               <span className="text-xl font-bold text-gray-900">FarmTech Pro</span>
             </div>
-            
+
             <nav className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
               <a href="#benefits" className="text-gray-600 hover:text-gray-900 transition-colors">Benefits</a>
@@ -178,12 +177,12 @@ export default function LandingPage() {
             <Badge className="mb-4" variant="secondary">
               🚀 Now with AI-Powered Health Insights
             </Badge>
-            
+
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Revolutionize Your
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600"> Farm Management</span>
             </h1>
-            
+
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               The most advanced livestock management system that combines IoT sensors, AI analytics, 
               and intuitive design to optimize your farm's health, productivity, and profitability.
@@ -270,7 +269,7 @@ export default function LandingPage() {
                 Join thousands of farmers who have revolutionized their operations with 
                 data-driven insights and automated management systems.
               </p>
-              
+
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-center space-x-3">
@@ -425,7 +424,7 @@ export default function LandingPage() {
                 Revolutionizing livestock management with cutting-edge technology and AI-powered insights.
               </p>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
@@ -435,7 +434,7 @@ export default function LandingPage() {
                 <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Support</h3>
               <ul className="space-y-2">
@@ -445,7 +444,7 @@ export default function LandingPage() {
                 <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
@@ -456,7 +455,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
             <p className="text-gray-400">© 2024 FarmTech Pro. All rights reserved.</p>
           </div>

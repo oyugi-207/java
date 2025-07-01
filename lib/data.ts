@@ -767,11 +767,11 @@ export const useFarmData = () => {
       animals: store.animals.filter(animal => animal.farmId === farmId),
       tasks: store.tasks.filter(task => task.farmId === farmId),
       inventory: store.inventory.filter(item => item.farmId === farmId),
-      healthRecords: store.healthRecords.filter(record => record.farm_id === farmId),
-      feedingRecords: store.feedingRecords.filter(record => record.farm_id === farmId),
-      breedingRecords: store.breedingRecords.filter(record => record.farm_id === farmId),
-      productionRecords: store.productionRecords.filter(record => record.farm_id === farmId),
-      staff: store.staff.filter(member => member.farm_id === farmId),
+      healthRecords: store.healthRecords.filter(record => record.farmId === farmId),
+      feedingRecords: store.feedingRecords.filter(record => record.farmId === farmId),
+      breedingRecords: store.breedingRecords.filter(record => record.farmId === farmId),
+      productionRecords: store.productionRecords.filter(record => record.farmId === farmId),
+      staff: store.staff.filter(member => member.farmId === farmId),
     };
   } catch (error) {
     return store;
