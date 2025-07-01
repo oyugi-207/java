@@ -5,79 +5,79 @@
 @layer base {
   :root {
     /* Primary Farm Theme Colors */
-    --background: 247 251 248;
-    --foreground: 20 37 26;
+    --background: 250 252 251;
+    --foreground: 15 23 42;
     --card: 255 255 255;
-    --card-foreground: 20 37 26;
+    --card-foreground: 15 23 42;
     --popover: 255 255 255;
-    --popover-foreground: 20 37 26;
-    --primary: 74 136 87;
+    --popover-foreground: 15 23 42;
+    --primary: 34 197 94;
     --primary-foreground: 255 255 255;
-    --secondary: 132 181 145;
-    --secondary-foreground: 20 37 26;
-    --muted: 241 248 243;
-    --muted-foreground: 107 114 128;
-    --accent: 132 181 145;
-    --accent-foreground: 20 37 26;
-    --destructive: 220 38 38;
+    --secondary: 101 163 13;
+    --secondary-foreground: 255 255 255;
+    --muted: 248 250 252;
+    --muted-foreground: 100 116 139;
+    --accent: 16 185 129;
+    --accent-foreground: 255 255 255;
+    --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
-    --border: 226 240 231;
-    --input: 226 240 231;
-    --ring: 74 136 87;
-    --radius: 0.75rem;
+    --border: 226 232 240;
+    --input: 241 245 249;
+    --ring: 34 197 94;
+    --radius: 0.5rem;
 
     /* Chart Colors */
-    --chart-1: 74 136 87;
-    --chart-2: 132 181 145;
-    --chart-3: 194 220 201;
-    --chart-4: 255 193 8;
-    --chart-5: 255 125 0;
+    --chart-1: 34 197 94;
+    --chart-2: 16 185 129;
+    --chart-3: 101 163 13;
+    --chart-4: 59 130 246;
+    --chart-5: 139 92 246;
 
     /* Status Colors */
     --success: 34 197 94;
-    --warning: 245 158 11;
+    --warning: 251 146 60;
     --info: 59 130 246;
     --health-excellent: 34 197 94;
-    --health-good: 132 204 22;
-    --health-warning: 245 158 11;
+    --health-good: 101 163 13;
+    --health-warning: 251 146 60;
     --health-critical: 239 68 68;
 
     /* Brand Colors */
-    --farm-green: 74 136 87;
-    --farm-light-green: 132 181 145;
-    --farm-sage: 149 169 142;
-    --farm-beige: 241 235 220;
-    --farm-brown: 121 85 72;
-    --farm-gold: 255 193 8;
+    --farm-green: 34 197 94;
+    --farm-light-green: 16 185 129;
+    --farm-sage: 101 163 13;
+    --farm-beige: 249 250 251;
+    --farm-brown: 120 113 108;
+    --farm-accent: 16 185 129;
   }
 
   .dark {
-    --background: 13 20 16;
-    --foreground: 240 248 242;
-    --card: 20 30 23;
-    --card-foreground: 240 248 242;
-    --popover: 20 30 23;
-    --popover-foreground: 240 248 242;
-    --primary: 132 181 145;
-    --primary-foreground: 13 20 16;
-    --secondary: 74 136 87;
-    --secondary-foreground: 240 248 242;
-    --muted: 26 40 30;
-    --muted-foreground: 156 163 175;
-    --accent: 74 136 87;
-    --accent-foreground: 240 248 242;
-    --destructive: 185 28 28;
-    --destructive-foreground: 240 248 242;
-    --border: 40 60 46;
-    --input: 40 60 46;
-    --ring: 132 181 145;
+    --background: 3 7 18;
+    --foreground: 241 245 249;
+    --card: 15 23 42;
+    --card-foreground: 241 245 249;
+    --popover: 15 23 42;
+    --popover-foreground: 241 245 249;
+    --primary: 34 197 94;
+    --primary-foreground: 3 7 18;
+    --secondary: 101 163 13;
+    --secondary-foreground: 241 245 249;
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
+    --accent: 16 185 129;
+    --accent-foreground: 3 7 18;
+    --destructive: 239 68 68;
+    --destructive-foreground: 241 245 249;
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 34 197 94;
 
     /* Chart Colors - Dark */
-    --chart-1: 132 181 145;
-    --chart-2: 74 136 87;
-    --chart-3: 48 86 54;
-    --chart-4: 255 193 8;
-    --chart-5: 255 125 0;
+    --chart-1: 34 197 94;
+    --chart-2: 16 185 129;
+    --chart-3: 101 163 13;
+    --chart-4: 59 130 246;
+    --chart-5: 139 92 246;
   }
 }
 
@@ -117,13 +117,13 @@
   .gradient-success {
     background: linear-gradient(135deg, 
       rgb(34, 197, 94) 0%, 
-      rgb(132, 204, 22) 100%);
+      rgb(101, 163, 13) 100%);
   }
 
   .gradient-warning {
     background: linear-gradient(135deg, 
-      rgb(245, 158, 11) 0%, 
-      rgb(255, 193, 8) 100%);
+      rgb(251, 146, 60) 0%, 
+      rgb(245, 101, 101) 100%);
   }
 
   .gradient-danger {
@@ -144,13 +144,13 @@
   /* Farm Pattern */
   .farm-pattern {
     background-image: 
-      radial-gradient(circle at 2px 2px, rgba(74, 136, 87, 0.15) 1px, transparent 0);
+      radial-gradient(circle at 2px 2px, rgba(34, 197, 94, 0.1) 1px, transparent 0);
     background-size: 24px 24px;
   }
 
   .farm-pattern-dark {
     background-image: 
-      radial-gradient(circle at 2px 2px, rgba(132, 181, 145, 0.1) 1px, transparent 0);
+      radial-gradient(circle at 2px 2px, rgba(16, 185, 129, 0.15) 1px, transparent 0);
     background-size: 24px 24px;
   }
 
@@ -237,20 +237,23 @@
   }
 
   .farm-button {
-    @apply bg-gradient-to-r from-green-600 to-green-700 
-           hover:from-green-700 hover:to-green-800 
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 
+           hover:from-green-600 hover:to-emerald-700 
            text-white font-medium py-2 px-4 rounded-lg 
            shadow-md hover:shadow-lg transition-all duration-200 
            focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
   }
 
   .farm-button-secondary {
-    @apply bg-gradient-to-r from-gray-100 to-gray-200 
-           hover:from-gray-200 hover:to-gray-300 
-           text-gray-800 font-medium py-2 px-4 rounded-lg 
-           border border-gray-300 shadow-sm hover:shadow-md 
+    @apply bg-gradient-to-r from-slate-100 to-slate-200 
+           hover:from-slate-200 hover:to-slate-300 
+           text-slate-800 font-medium py-2 px-4 rounded-lg 
+           border border-slate-300 shadow-sm hover:shadow-md 
            transition-all duration-200 focus:ring-2 
-           focus:ring-gray-500 focus:ring-offset-2;
+           focus:ring-slate-500 focus:ring-offset-2
+           dark:from-slate-700 dark:to-slate-800
+           dark:hover:from-slate-600 dark:hover:to-slate-700
+           dark:text-slate-200 dark:border-slate-600;
   }
 }
 

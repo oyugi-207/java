@@ -17,7 +17,7 @@ const config: Config = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'farm-hero': 'linear-gradient(135deg, rgba(74, 136, 87, 0.1) 0%, rgba(132, 181, 145, 0.05) 25%, rgba(241, 235, 220, 0.1) 50%, rgba(149, 169, 142, 0.05) 75%, rgba(74, 136, 87, 0.1) 100%)',
+        'farm-hero': 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 25%, rgba(249, 250, 251, 0.1) 50%, rgba(101, 163, 13, 0.05) 75%, rgba(34, 197, 94, 0.1) 100%)',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -72,7 +72,7 @@ const config: Config = {
           sage: 'hsl(var(--farm-sage))',
           beige: 'hsl(var(--farm-beige))',
           brown: 'hsl(var(--farm-brown))',
-          gold: 'hsl(var(--farm-gold))',
+          accent: 'hsl(var(--farm-accent))',
         },
         // Health status colors
         health: {
