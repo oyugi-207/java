@@ -23,7 +23,7 @@ interface VaccinationModalProps {
 }
 
 export function VaccinationModal({ open, onOpenChange, animal }: VaccinationModalProps) {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const [vaccineName, setVaccineName] = useState('');
   const [date, setDate] = useState('');

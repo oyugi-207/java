@@ -10,11 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QrCode, Scan, Nfc, Search, Plus, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import toast from 'react-hot-toast';
 
 export default function QRRFIDPage() {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [scanResult, setScanResult] = useState('');
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const [rfidTag, setRfidTag] = useState('');

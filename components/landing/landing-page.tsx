@@ -26,7 +26,7 @@ import {
   Settings
 } from 'lucide-react';
 
-export default function LandingPage() {
+function LandingPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -480,3 +480,6 @@ export default function LandingPage() {
     </div>
   );
 }
+
+export default LandingPage;
+export { LandingPage };

@@ -23,7 +23,7 @@ interface TreatmentModalProps {
 }
 
 export function TreatmentModal({ open, onOpenChange, animal }: TreatmentModalProps) {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const [condition, setCondition] = useState('');
   const [medication, setMedication] = useState('');
