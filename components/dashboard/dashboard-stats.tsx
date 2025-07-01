@@ -1,12 +1,13 @@
+
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, PawPrint, Heart, DollarSign, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 
 export function DashboardStats() {
-  const { animals, tasks } = useData();
+  const { animals, tasks } = useFarmData();
 
   const healthyAnimals = animals.filter(animal => animal.status === 'healthy').length;
   const activeAlerts = tasks.filter(task => task.priority === 'urgent' && task.status !== 'completed').length;

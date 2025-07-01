@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAuth } from './auth';
@@ -156,39 +155,39 @@ interface DataState {
   // Actions
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  
+
   // Data fetching
   fetchAllData: () => Promise<void>;
-  
+
   // Animal operations
   addAnimal: (animalData: Omit<Animal, 'id' | 'farmId' | 'createdAt' | 'updatedAt' | 'measurements'>) => Promise<void>;
   updateAnimal: (id: string, animalData: Partial<Animal>) => Promise<void>;
   deleteAnimal: (id: string) => Promise<void>;
-  
+
   // Task operations
   addTask: (taskData: Omit<Task, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateTask: (id: string, taskData: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  
+
   // Health record operations
   addHealthRecord: (recordData: Omit<HealthRecord, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateHealthRecord: (id: string, recordData: Partial<HealthRecord>) => Promise<void>;
   deleteHealthRecord: (id: string) => Promise<void>;
-  
+
   // Feeding record operations
   addFeedingRecord: (recordData: Omit<FeedingRecord, 'id' | 'farmId' | 'createdAt'>) => Promise<void>;
-  
+
   // Breeding record operations
   addBreedingRecord: (recordData: Omit<BreedingRecord, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  
+
   // Production record operations
   addProductionRecord: (recordData: Omit<ProductionRecord, 'id' | 'farmId' | 'createdAt'>) => Promise<void>;
-  
+
   // Staff operations
   addStaffMember: (staffData: Omit<StaffMember, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateStaffMember: (id: string, staffData: Partial<StaffMember>) => Promise<void>;
   deleteStaffMember: (id: string) => Promise<void>;
-  
+
   // Measurement operations
   addMeasurement: (animalId: string, measurementData: Omit<Measurement, 'id'>) => Promise<void>;
   updateMeasurement: (animalId: string, measurementId: string, measurementData: Partial<Measurement>) => Promise<void>;
@@ -265,7 +264,7 @@ export const useDataStore = create<DataState>()(
       fetchAllData: async () => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const [
             animals,
             tasks,
@@ -346,7 +345,7 @@ export const useDataStore = create<DataState>()(
 
           const updatedAnimal = await dataService.updateAnimal(id, updateData);
           const transformedAnimal = transformSupabaseAnimal(updatedAnimal);
-          
+
           set(state => ({
             animals: state.animals.map(animal =>
               animal.id === id ? transformedAnimal : animal
@@ -407,7 +406,7 @@ export const useDataStore = create<DataState>()(
 
           const updatedTask = await dataService.updateTask(id, updateData);
           const transformedTask = transformSupabaseTask(updatedTask);
-          
+
           set(state => ({
             tasks: state.tasks.map(task =>
               task.id === id ? transformedTask : task
@@ -467,7 +466,7 @@ export const useDataStore = create<DataState>()(
           if (recordData.status) updateData.status = recordData.status;
 
           const updatedRecord = await dataService.updateHealthRecord(id, updateData);
-          
+
           set(state => ({
             healthRecords: state.healthRecords.map(record =>
               record.id === id ? updatedRecord : record
@@ -585,7 +584,7 @@ export const useDataStore = create<DataState>()(
           if (staffData.status) updateData.status = staffData.status;
 
           const updatedStaff = await dataService.updateStaff(id, updateData);
-          
+
           set(state => ({
             staff: state.staff.map(member =>
               member.id === id ? updatedStaff : member
@@ -613,12 +612,12 @@ export const useDataStore = create<DataState>()(
       addMeasurement: async (animalId, measurementData) => {
         try {
           const farmId = getCurrentFarmId();
-          
+
           const newMeasurement: Measurement = {
             ...measurementData,
             id: `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           };
-          
+
           set(state => ({
             animals: state.animals.map(animal =>
               animal.id === animalId && animal.farmId === farmId
@@ -639,7 +638,7 @@ export const useDataStore = create<DataState>()(
       updateMeasurement: async (animalId, measurementId, measurementData) => {
         try {
           const farmId = getCurrentFarmId();
-          
+
           set(state => ({
             animals: state.animals.map(animal =>
               animal.id === animalId && animal.farmId === farmId
@@ -664,7 +663,7 @@ export const useDataStore = create<DataState>()(
       deleteMeasurement: async (animalId, measurementId) => {
         try {
           const farmId = getCurrentFarmId();
-          
+
           set(state => ({
             animals: state.animals.map(animal =>
               animal.id === animalId && animal.farmId === farmId
@@ -696,7 +695,7 @@ export const useDataStore = create<DataState>()(
 export const useData = () => {
   const store = useDataStore();
   const { user } = useAuth();
-  
+
   if (!user?.farmId) {
     return {
       ...store,
