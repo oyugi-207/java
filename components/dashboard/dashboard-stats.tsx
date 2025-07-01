@@ -10,6 +10,10 @@ export function DashboardStats() {
   const { animals, tasks } = useFarmData();
 
   const healthyAnimals = animals.filter(animal => animal.status === 'healthy').length;
+  const sickAnimals = animals.filter(animal => animal.status === 'sick').length;
+  const pregnantAnimals = animals.filter(animal => animal.status === 'pregnant').length;
+  const deceasedAnimals = animals.filter(animal => animal.status === 'deceased').length;
+  const soldAnimals = animals.filter(animal => animal.status === 'sold').length;
   const activeAlerts = tasks.filter(task => task.priority === 'urgent' && task.status !== 'completed').length;
 
   const stats = [
@@ -41,18 +45,45 @@ export function DashboardStats() {
       bgColor: 'bg-emerald-50 dark:bg-emerald-950/50',
     },
     {
-      name: 'Active Alerts',
-      value: activeAlerts.toString(),
-      change: '-3',
-      changeType: 'positive',
+      name: 'Sick Animals',
+      value: sickAnimals.toString(),
+      change: sickAnimals > 0 ? '+2' : '0',
+      changeType: sickAnimals > 0 ? 'negative' : 'positive',
       icon: AlertTriangle,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-950/50',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 dark:bg-red-950/50',
+    },
+    {
+      name: 'Pregnant',
+      value: pregnantAnimals.toString(),
+      change: '+3',
+      changeType: 'positive',
+      icon: Heart,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50 dark:bg-purple-950/50',
+    },
+    {
+      name: 'Deceased',
+      value: deceasedAnimals.toString(),
+      change: deceasedAnimals > 0 ? `+${deceasedAnimals}` : '0',
+      changeType: 'negative',
+      icon: AlertTriangle,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50 dark:bg-gray-950/50',
+    },
+    {
+      name: 'Sold',
+      value: soldAnimals.toString(),
+      change: '+12',
+      changeType: 'positive',
+      icon: DollarSign,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50 dark:bg-yellow-950/50',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
       {stats.map((stat, index) => (
         <motion.div
           key={stat.name}

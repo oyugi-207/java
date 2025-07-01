@@ -12,6 +12,7 @@ import { Bell, AlertTriangle, Heart, Calendar, Zap, CheckCircle, X, Settings } f
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { useNotifications, requestNotificationPermission } from '@/lib/notifications';
 
 interface Notification {
   id: string;
@@ -26,7 +27,22 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([
+  const { 
+    notifications, 
+    settings, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification, 
+    updateSettings,
+    clearExpiredNotifications
+  } = useNotifications();
+  
+  useEffect(() => {
+    clearExpiredNotifications();
+    requestNotificationPermission();
+  }, []);
+
+  const [mockNotifications] = useState<any[]>([
     {
       id: '1',
       type: 'health',
@@ -78,15 +94,7 @@ export default function NotificationsPage() {
     },
   ]);
 
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    healthAlerts: true,
-    taskReminders: true,
-    breedingUpdates: true,
-    inventoryAlerts: true,
-    systemUpdates: false,
-  });
+  // Settings are now managed by the notification store
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const urgentCount = notifications.filter(n => n.priority === 'urgent' && !n.read).length;
@@ -112,25 +120,23 @@ export default function NotificationsPage() {
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
+  const handleMarkAsRead = (id: string) => {
+    markAsRead(id);
     toast.success('Notification marked as read');
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
     toast.success('All notifications marked as read');
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleDeleteNotification = (id: string) => {
+    deleteNotification(id);
     toast.success('Notification deleted');
   };
 
-  const updateSetting = (key: string, value: boolean) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+  const handleUpdateSetting = (key: string, value: boolean) => {
+    updateSettings({ [key]: value });
     toast.success('Notification settings updated');
   };
 
@@ -151,7 +157,7 @@ export default function NotificationsPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={markAllAsRead} disabled={unreadCount === 0}>
+            <Button variant="outline" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
               <CheckCircle className="h-4 w-4 mr-2" />
               Mark All Read
             </Button>

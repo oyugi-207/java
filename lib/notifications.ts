@@ -1,17 +1,20 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface Notification {
   id: string;
-  type: 'health' | 'task' | 'alert' | 'system' | 'breeding';
+  type: 'health' | 'task' | 'alert' | 'system' | 'breeding' | 'production' | 'sensor';
   title: string;
   message: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   read: boolean;
-  createdAt: string;
-  animalId?: string;
   actionRequired?: boolean;
-  emailSent?: boolean;
+  animalId?: string;
+  userId?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+  expiresAt?: string;
 }
 
 interface NotificationState {
@@ -24,14 +27,16 @@ interface NotificationState {
     breedingUpdates: boolean;
     inventoryAlerts: boolean;
     systemUpdates: boolean;
+    sensorAlerts: boolean;
   };
   
+  // Actions
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (id: string) => void;
+  clearExpiredNotifications: () => void;
   updateSettings: (settings: Partial<NotificationState['settings']>) => void;
-  sendEmailNotification: (notification: Notification) => Promise<boolean>;
 }
 
 export const useNotifications = create<NotificationState>()(
@@ -39,26 +44,37 @@ export const useNotifications = create<NotificationState>()(
     (set, get) => ({
       notifications: [
         {
-          id: '1',
+          id: 'notif_1',
           type: 'health',
           title: 'Health Alert: Bella',
           message: 'Temperature spike detected. Immediate veterinary attention recommended.',
           priority: 'urgent',
           read: false,
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          animalId: 'animal_1',
           actionRequired: true,
+          animalId: 'animal_1',
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '2',
+          id: 'notif_2',
           type: 'task',
           title: 'Vaccination Due',
           message: 'Annual vaccination due for 5 cattle in Pasture A.',
           priority: 'high',
           read: false,
-          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
           actionRequired: true,
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
         },
+        {
+          id: 'notif_3',
+          type: 'sensor',
+          title: 'Sensor Battery Low',
+          message: 'Activity tracker for Luna needs battery replacement.',
+          priority: 'medium',
+          read: false,
+          actionRequired: true,
+          animalId: 'animal_3',
+          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+        }
       ],
       settings: {
         emailNotifications: true,
@@ -68,43 +84,60 @@ export const useNotifications = create<NotificationState>()(
         breedingUpdates: true,
         inventoryAlerts: true,
         systemUpdates: false,
+        sensorAlerts: true,
       },
 
       addNotification: (notificationData) => {
-        const notification: Notification = {
+        const newNotification: Notification = {
           ...notificationData,
-          id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           createdAt: new Date().toISOString(),
         };
 
         set(state => ({
-          notifications: [notification, ...state.notifications]
+          notifications: [newNotification, ...state.notifications]
         }));
 
-        // Send email if enabled
-        const { settings, sendEmailNotification } = get();
-        if (settings.emailNotifications && shouldSendEmail(notification, settings)) {
-          sendEmailNotification(notification);
+        // Trigger browser notification if enabled
+        const { settings } = get();
+        if (settings.pushNotifications && notificationData.priority === 'urgent') {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(notificationData.title, {
+              body: notificationData.message,
+              icon: '/favicon.ico',
+              tag: newNotification.id,
+            });
+          }
         }
       },
 
       markAsRead: (id) => {
         set(state => ({
-          notifications: state.notifications.map(n => 
-            n.id === id ? { ...n, read: true } : n
+          notifications: state.notifications.map(notification =>
+            notification.id === id ? { ...notification, read: true } : notification
           )
         }));
       },
 
       markAllAsRead: () => {
         set(state => ({
-          notifications: state.notifications.map(n => ({ ...n, read: true }))
+          notifications: state.notifications.map(notification => ({ ...notification, read: true }))
         }));
       },
 
       deleteNotification: (id) => {
         set(state => ({
-          notifications: state.notifications.filter(n => n.id !== id)
+          notifications: state.notifications.filter(notification => notification.id !== id)
+        }));
+      },
+
+      clearExpiredNotifications: () => {
+        const now = new Date();
+        set(state => ({
+          notifications: state.notifications.filter(notification => {
+            if (!notification.expiresAt) return true;
+            return new Date(notification.expiresAt) > now;
+          })
         }));
       },
 
@@ -113,48 +146,82 @@ export const useNotifications = create<NotificationState>()(
           settings: { ...state.settings, ...newSettings }
         }));
       },
-
-      sendEmailNotification: async (notification) => {
-        try {
-          // Simulate email sending
-          console.log('Sending email notification:', notification);
-          
-          // In a real app, this would call an email service
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          set(state => ({
-            notifications: state.notifications.map(n => 
-              n.id === notification.id ? { ...n, emailSent: true } : n
-            )
-          }));
-          
-          return true;
-        } catch (error) {
-          console.error('Failed to send email notification:', error);
-          return false;
-        }
-      },
     }),
     {
-      name: 'agroinsight-notifications',
+      name: 'notification-storage',
       version: 1,
     }
   )
 );
 
-function shouldSendEmail(notification: Notification, settings: NotificationState['settings']): boolean {
-  switch (notification.type) {
-    case 'health':
-      return settings.healthAlerts;
-    case 'task':
-      return settings.taskReminders;
-    case 'breeding':
-      return settings.breedingUpdates;
-    case 'alert':
-      return settings.inventoryAlerts;
-    case 'system':
-      return settings.systemUpdates;
-    default:
-      return false;
+// Helper functions for creating notifications
+export const createHealthAlert = (animalId: string, title: string, message: string, priority: Notification['priority'] = 'high') => {
+  const { addNotification, settings } = useNotifications.getState();
+  
+  if (settings.healthAlerts) {
+    addNotification({
+      type: 'health',
+      title,
+      message,
+      priority,
+      read: false,
+      actionRequired: true,
+      animalId,
+    });
   }
-}
+};
+
+export const createTaskReminder = (title: string, message: string, priority: Notification['priority'] = 'medium') => {
+  const { addNotification, settings } = useNotifications.getState();
+  
+  if (settings.taskReminders) {
+    addNotification({
+      type: 'task',
+      title,
+      message,
+      priority,
+      read: false,
+      actionRequired: true,
+    });
+  }
+};
+
+export const createSensorAlert = (animalId: string, title: string, message: string, priority: Notification['priority'] = 'medium') => {
+  const { addNotification, settings } = useNotifications.getState();
+  
+  if (settings.sensorAlerts) {
+    addNotification({
+      type: 'sensor',
+      title,
+      message,
+      priority,
+      read: false,
+      actionRequired: true,
+      animalId,
+    });
+  }
+};
+
+export const createInventoryAlert = (title: string, message: string, priority: Notification['priority'] = 'medium') => {
+  const { addNotification, settings } = useNotifications.getState();
+  
+  if (settings.inventoryAlerts) {
+    addNotification({
+      type: 'alert',
+      title,
+      message,
+      priority,
+      read: false,
+      actionRequired: true,
+    });
+  }
+};
+
+// Request notification permission
+export const requestNotificationPermission = async () => {
+  if ('Notification' in window) {
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
+  }
+  return false;
+};

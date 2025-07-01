@@ -6,344 +6,366 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Zap, Thermometer, Droplets, Wind, Activity, AlertTriangle, Plus, Settings, Wifi, WifiOff } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Activity, Thermometer, Heart, MapPin, Scale, Zap, AlertTriangle, Wifi, WifiOff, Battery, BatteryLow, Signal } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useFarmAnimals } from '@/lib/data';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import toast from 'react-hot-toast';
 
-interface Sensor {
+interface SensorDevice {
   id: string;
   name: string;
-  type: 'temperature' | 'humidity' | 'air_quality' | 'water_level' | 'motion' | 'weight';
-  location: string;
-  status: 'online' | 'offline' | 'warning';
-  value: number;
-  unit: string;
-  lastUpdate: string;
+  type: 'temperature' | 'heart_rate' | 'activity' | 'location' | 'weight' | 'rumination';
+  animalId: string;
+  status: 'online' | 'offline' | 'error' | 'low_battery';
   batteryLevel: number;
-  threshold?: { min: number; max: number };
+  signalStrength: number;
+  lastReading: number;
+  unit: string;
+  timestamp: string;
+  alerts: string[];
 }
 
-export default function SensorsPage() {
-  const [sensors, setSensors] = useState<Sensor[]>([
+export default function EnhancedSensorsPage() {
+  const animals = useFarmAnimals();
+  const [selectedAnimal, setSelectedAnimal] = useState<string>('all');
+  const [selectedSensorType, setSelectedSensorType] = useState<string>('all');
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
+
+  // Mock sensor data - in a real app, this would come from your sensor network
+  const [sensorDevices, setSensorDevices] = useState<SensorDevice[]>([
     {
-      id: '1',
-      name: 'Barn Temperature',
+      id: 'sensor_001',
+      name: 'Temp Sensor - Bella',
       type: 'temperature',
-      location: 'Main Barn',
+      animalId: 'animal_1',
       status: 'online',
-      value: 22.5,
-      unit: '°C',
-      lastUpdate: '2 minutes ago',
       batteryLevel: 85,
-      threshold: { min: 18, max: 28 },
+      signalStrength: 92,
+      lastReading: 38.5,
+      unit: '°C',
+      timestamp: new Date().toISOString(),
+      alerts: []
     },
     {
-      id: '2',
-      name: 'Humidity Monitor',
-      type: 'humidity',
-      location: 'Main Barn',
+      id: 'sensor_002',
+      name: 'Heart Monitor - Charlie',
+      type: 'heart_rate',
+      animalId: 'animal_2',
       status: 'online',
-      value: 65,
-      unit: '%',
-      lastUpdate: '1 minute ago',
-      batteryLevel: 92,
-      threshold: { min: 40, max: 80 },
-    },
-    {
-      id: '3',
-      name: 'Air Quality Sensor',
-      type: 'air_quality',
-      location: 'Chicken Coop',
-      status: 'warning',
-      value: 78,
-      unit: 'AQI',
-      lastUpdate: '5 minutes ago',
-      batteryLevel: 45,
-      threshold: { min: 0, max: 100 },
-    },
-    {
-      id: '4',
-      name: 'Water Tank Level',
-      type: 'water_level',
-      location: 'Pasture A',
-      status: 'online',
-      value: 85,
-      unit: '%',
-      lastUpdate: '3 minutes ago',
-      batteryLevel: 78,
-      threshold: { min: 20, max: 100 },
-    },
-    {
-      id: '5',
-      name: 'Motion Detector',
-      type: 'motion',
-      location: 'Feed Storage',
-      status: 'offline',
-      value: 0,
-      unit: 'events/hr',
-      lastUpdate: '2 hours ago',
-      batteryLevel: 12,
-    },
-    {
-      id: '6',
-      name: 'Cattle Scale',
-      type: 'weight',
-      location: 'Weighing Station',
-      status: 'online',
-      value: 650,
-      unit: 'kg',
-      lastUpdate: '30 minutes ago',
       batteryLevel: 67,
+      signalStrength: 88,
+      lastReading: 72,
+      unit: 'BPM',
+      timestamp: new Date().toISOString(),
+      alerts: ['Elevated heart rate detected']
     },
+    {
+      id: 'sensor_003',
+      name: 'Activity Tracker - Luna',
+      type: 'activity',
+      animalId: 'animal_3',
+      status: 'low_battery',
+      batteryLevel: 15,
+      signalStrength: 78,
+      lastReading: 4200,
+      unit: 'steps',
+      timestamp: new Date().toISOString(),
+      alerts: ['Low battery warning']
+    },
+    {
+      id: 'sensor_004',
+      name: 'GPS Tracker - Daisy',
+      type: 'location',
+      animalId: 'animal_4',
+      status: 'offline',
+      batteryLevel: 0,
+      signalStrength: 0,
+      lastReading: 0,
+      unit: 'coords',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      alerts: ['Device offline for 2 hours']
+    }
   ]);
 
-  const [selectedLocation, setSelectedLocation] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [sensorModalOpen, setSensorModalOpen] = useState(false);
-  const [newSensor, setNewSensor] = useState({
-    name: '',
-    type: 'temperature' as Sensor['type'],
-    location: '',
-    threshold: { min: 0, max: 100 },
-  });
+  // Generate realistic sensor readings for charts
+  const generateSensorData = (sensorType: string) => {
+    const data = [];
+    const now = new Date();
 
-  const sensorData = [
-    { time: '00:00', temperature: 20, humidity: 70, airQuality: 85 },
-    { time: '04:00', temperature: 18, humidity: 75, airQuality: 82 },
-    { time: '08:00', temperature: 22, humidity: 65, airQuality: 88 },
-    { time: '12:00', temperature: 26, humidity: 60, airQuality: 85 },
-    { time: '16:00', temperature: 28, humidity: 55, airQuality: 80 },
-    { time: '20:00', temperature: 24, humidity: 62, airQuality: 87 },
-  ];
+    for (let i = 23; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+      let value: number;
 
-  const filteredSensors = sensors.filter(sensor => {
-    const matchesLocation = selectedLocation === 'all' || sensor.location === selectedLocation;
-    const matchesType = selectedType === 'all' || sensor.type === selectedType;
-    return matchesLocation && matchesType;
-  });
+      switch (sensorType) {
+        case 'temperature':
+          value = 38 + Math.random() * 2 + Math.sin(i / 4) * 0.5;
+          break;
+        case 'heart_rate':
+          value = 70 + Math.random() * 20 + Math.sin(i / 3) * 5;
+          break;
+        case 'activity':
+          value = Math.floor(Math.random() * 1000) + (i > 18 || i < 6 ? 0 : 500);
+          break;
+        case 'weight':
+          value = 450 + Math.random() * 10;
+          break;
+        default:
+          value = Math.random() * 100;
+      }
 
-  const sensorStats = {
-    total: sensors.length,
-    online: sensors.filter(s => s.status === 'online').length,
-    offline: sensors.filter(s => s.status === 'offline').length,
-    warning: sensors.filter(s => s.status === 'warning').length,
+      data.push({
+        time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        value: Number(value.toFixed(1)),
+        timestamp: time.toISOString()
+      });
+    }
+
+    return data;
   };
+
+  // Simulate real-time data updates
+  useEffect(() => {
+    if (!realTimeEnabled) return;
+
+    const interval = setInterval(() => {
+      setSensorDevices(prev => prev.map(sensor => {
+        if (sensor.status === 'offline') return sensor;
+
+        let newReading = sensor.lastReading;
+
+        switch (sensor.type) {
+          case 'temperature':
+            newReading = 38 + Math.random() * 2;
+            break;
+          case 'heart_rate':
+            newReading = 70 + Math.random() * 20;
+            break;
+          case 'activity':
+            newReading = Math.floor(Math.random() * 1000);
+            break;
+          case 'weight':
+            newReading = sensor.lastReading + (Math.random() - 0.5) * 0.1;
+            break;
+        }
+
+        // Check for alerts
+        const newAlerts = [...sensor.alerts];
+        if (sensor.type === 'temperature' && newReading > 39.5) {
+          if (!newAlerts.includes('High temperature alert')) {
+            newAlerts.push('High temperature alert');
+            if (alertsEnabled) {
+              toast.error(`High temperature detected in ${sensor.name}`);
+            }
+          }
+        }
+
+        if (sensor.type === 'heart_rate' && newReading > 90) {
+          if (!newAlerts.includes('Elevated heart rate')) {
+            newAlerts.push('Elevated heart rate');
+            if (alertsEnabled) {
+              toast.warning(`Elevated heart rate in ${sensor.name}`);
+            }
+          }
+        }
+
+        return {
+          ...sensor,
+          lastReading: Number(newReading.toFixed(1)),
+          timestamp: new Date().toISOString(),
+          alerts: newAlerts.slice(-3) // Keep only last 3 alerts
+        };
+      }));
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [realTimeEnabled, alertsEnabled]);
 
   const getSensorIcon = (type: string) => {
     switch (type) {
       case 'temperature': return Thermometer;
-      case 'humidity': return Droplets;
-      case 'air_quality': return Wind;
-      case 'water_level': return Droplets;
-      case 'motion': return Activity;
-      case 'weight': return Activity;
-      default: return Zap;
+      case 'heart_rate': return Heart;
+      case 'activity': return Activity;
+      case 'location': return MapPin;
+      case 'weight': return Scale;
+      default: return Activity;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300';
-      case 'offline': return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
-      case 'warning': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-950/50 dark:text-gray-300';
+      case 'online': return 'text-green-600 bg-green-100 dark:bg-green-950/50';
+      case 'offline': return 'text-red-600 bg-red-100 dark:bg-red-950/50';
+      case 'error': return 'text-orange-600 bg-orange-100 dark:bg-orange-950/50';
+      case 'low_battery': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-950/50';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-950/50';
     }
   };
 
-  const getBatteryColor = (level: number) => {
-    if (level > 50) return 'text-green-600';
-    if (level > 20) return 'text-yellow-600';
-    return 'text-red-600';
+  const getBatteryIcon = (level: number) => {
+    return level < 20 ? BatteryLow : Battery;
   };
 
-  const addSensor = () => {
-    if (!newSensor.name || !newSensor.location) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+  const filteredSensors = sensorDevices.filter(sensor => {
+    const matchesAnimal = selectedAnimal === 'all' || sensor.animalId === selectedAnimal;
+    const matchesType = selectedSensorType === 'all' || sensor.type === selectedSensorType;
+    return matchesAnimal && matchesType;
+  });
 
-    const sensor: Sensor = {
-      id: `sensor_${Date.now()}`,
-      ...newSensor,
-      status: 'online',
-      value: Math.random() * 100,
-      unit: newSensor.type === 'temperature' ? '°C' : 
-            newSensor.type === 'humidity' ? '%' : 
-            newSensor.type === 'weight' ? 'kg' : 'units',
-      lastUpdate: 'Just now',
-      batteryLevel: 100,
-    };
-
-    setSensors(prev => [...prev, sensor]);
-    setNewSensor({
-      name: '',
-      type: 'temperature',
-      location: '',
-      threshold: { min: 0, max: 100 },
-    });
-    setSensorModalOpen(false);
-    toast.success('Sensor added successfully');
-  };
-
-  const toggleSensorStatus = (sensorId: string) => {
-    setSensors(prev => prev.map(sensor => 
-      sensor.id === sensorId 
-        ? { ...sensor, status: sensor.status === 'online' ? 'offline' : 'online' }
-        : sensor
-    ));
-  };
-
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSensors(prevSensors => 
-        prevSensors.map(sensor => ({
-          ...sensor,
-          value: sensor.status === 'online' ? 
-            Math.max(0, sensor.value + (Math.random() - 0.5) * 5) : 
-            sensor.value,
-          lastUpdate: sensor.status === 'online' ? 
-            `${Math.floor(Math.random() * 5) + 1} minutes ago` : 
-            sensor.lastUpdate,
-        }))
-      );
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const onlineSensors = sensorDevices.filter(s => s.status === 'online').length;
+  const offlineSensors = sensorDevices.filter(s => s.status === 'offline').length;
+  const lowBatterySensors = sensorDevices.filter(s => s.status === 'low_battery').length;
+  const totalAlerts = sensorDevices.reduce((sum, sensor) => sum + sensor.alerts.length, 0);
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">IoT Sensors</h1>
-            <p className="text-muted-foreground">
-              Monitor environmental conditions and equipment status in real-time
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Sensor Monitoring System
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Real-time monitoring of animal health and activity sensors
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <Settings className="h-4 w-4 mr-2" />
-              Configure
-            </Button>
-            <Button onClick={() => setSensorModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Sensor
-            </Button>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center space-x-2">
+              <Switch checked={realTimeEnabled} onCheckedChange={setRealTimeEnabled} />
+              <Label>Real-time Updates</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch checked={alertsEnabled} onCheckedChange={setAlertsEnabled} />
+              <Label>Alerts</Label>
+            </div>
           </div>
         </div>
 
-        {/* Sensor Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Zap className="h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Sensors</p>
-                  <p className="text-2xl font-bold text-blue-600">{sensorStats.total}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Wifi className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Online</p>
-                  <p className="text-2xl font-bold text-green-600">{sensorStats.online}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Warnings</p>
-                  <p className="text-2xl font-bold text-yellow-600">{sensorStats.warning}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <WifiOff className="h-5 w-5 text-red-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Offline</p>
-                  <p className="text-2xl font-bold text-red-600">{sensorStats.offline}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Status Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[
+            { title: 'Online Sensors', value: onlineSensors, icon: Wifi, color: 'green' },
+            { title: 'Offline Sensors', value: offlineSensors, icon: WifiOff, color: 'red' },
+            { title: 'Low Battery', value: lowBatterySensors, icon: BatteryLow, color: 'yellow' },
+            { title: 'Active Alerts', value: totalAlerts, icon: AlertTriangle, color: 'orange' }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+            >
+              <Card className="premium-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                      <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-950/50`}>
+                      <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="premium-card">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filter by location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  <SelectItem value="Main Barn">Main Barn</SelectItem>
-                  <SelectItem value="Chicken Coop">Chicken Coop</SelectItem>
-                  <SelectItem value="Pasture A">Pasture A</SelectItem>
-                  <SelectItem value="Feed Storage">Feed Storage</SelectItem>
-                  <SelectItem value="Weighing Station">Weighing Station</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filter by type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="temperature">Temperature</SelectItem>
-                  <SelectItem value="humidity">Humidity</SelectItem>
-                  <SelectItem value="air_quality">Air Quality</SelectItem>
-                  <SelectItem value="water_level">Water Level</SelectItem>
-                  <SelectItem value="motion">Motion</SelectItem>
-                  <SelectItem value="weight">Weight</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex-1">
+                <Label htmlFor="animal-filter">Filter by Animal</Label>
+                <Select value={selectedAnimal} onValueChange={setSelectedAnimal}>
+                  <SelectTrigger id="animal-filter">
+                    <SelectValue placeholder="Select animal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Animals</SelectItem>
+                    {animals.map(animal => (
+                      <SelectItem key={animal.id} value={animal.id}>
+                        {animal.name} ({animal.species})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1">
+                <Label htmlFor="sensor-filter">Filter by Sensor Type</Label>
+                <Select value={selectedSensorType} onValueChange={setSelectedSensorType}>
+                  <SelectTrigger id="sensor-filter">
+                    <SelectValue placeholder="Select sensor type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sensors</SelectItem>
+                    <SelectItem value="temperature">Temperature</SelectItem>
+                    <SelectItem value="heart_rate">Heart Rate</SelectItem>
+                    <SelectItem value="activity">Activity</SelectItem>
+                    <SelectItem value="location">Location</SelectItem>
+                    <SelectItem value="weight">Weight</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sensor Tabs */}
-        <Tabs defaultValue="sensors" className="space-y-6">
+        {/* Sensor Monitoring Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="sensors">Sensor Status</TabsTrigger>
-            <TabsTrigger value="charts">Real-time Data</TabsTrigger>
-            <TabsTrigger value="alerts">Alerts & Notifications</TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="devices">Devices</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="alerts">Alerts</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="sensors" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {['temperature', 'heart_rate', 'activity', 'weight'].map((sensorType) => (
+                <Card key={sensorType} className="premium-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      {React.createElement(getSensorIcon(sensorType), { className: "h-5 w-5" })}
+                      <span className="capitalize">{sensorType.replace('_', ' ')} Monitoring</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={generateSensorData(sensorType)}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="time" />
+                        <YAxis />
+                        <Tooltip />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="#3b82f6" 
+                          fill="#3b82f6" 
+                          fillOpacity={0.3} 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="devices" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredSensors.map((sensor, index) => {
                 const IconComponent = getSensorIcon(sensor.type);
-                const isOutOfRange = sensor.threshold && 
-                  (sensor.value < sensor.threshold.min || sensor.value > sensor.threshold.max);
-                
+                const BatteryIcon = getBatteryIcon(sensor.batteryLevel);
+                const animal = animals.find(a => a.id === sensor.animalId);
+
                 return (
                   <motion.div
                     key={sensor.id}
@@ -351,107 +373,62 @@ export default function SensorsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
                   >
-                    <Card className="hover:shadow-lg transition-shadow">
+                    <Card className="premium-card hover:shadow-lg transition-all duration-300">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-950/50 rounded-lg">
-                              <IconComponent className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <CardTitle className="text-lg">{sensor.name}</CardTitle>
-                              <p className="text-sm text-muted-foreground">
-                                {sensor.location}
-                              </p>
-                            </div>
+                          <div className="flex items-center space-x-2">
+                            <IconComponent className="h-5 w-5 text-blue-600" />
+                            <CardTitle className="text-lg">{sensor.name}</CardTitle>
+                          </div>
+                          <Badge className={getStatusColor(sensor.status)}>
+                            {sensor.status.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                        {animal && (
+                          <p className="text-sm text-muted-foreground">
+                            Animal: {animal.name} ({animal.species})
+                          </p>
+                        )}
+                      </CardHeader>
+
+                      <CardContent className="space-y-4">
+                        {/* Latest Reading */}
+                        <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                          <span className="text-sm font-medium">Latest Reading</span>
+                          <span className="text-lg font-bold text-blue-600">
+                            {sensor.lastReading} {sensor.unit}
+                          </span>
+                        </div>
+
+                        {/* Device Status */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center space-x-2">
+                            <BatteryIcon className={`h-4 w-4 ${sensor.batteryLevel < 20 ? 'text-red-500' : 'text-green-500'}`} />
+                            <span className="text-sm">{sensor.batteryLevel}%</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className={getStatusColor(sensor.status)}>
-                              {sensor.status}
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleSensorStatus(sensor.id)}
-                            >
-                              {sensor.status === 'online' ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-                            </Button>
+                            <Signal className="h-4 w-4 text-blue-500" />
+                            <span className="text-sm">{sensor.signalStrength}%</span>
                           </div>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="text-center">
-                            <div className={`text-3xl font-bold ${isOutOfRange ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
-                              {sensor.value.toFixed(1)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {sensor.unit}
-                            </div>
-                            {isOutOfRange && (
-                              <Badge variant="destructive" className="mt-2">
-                                Out of Range
-                              </Badge>
-                            )}
-                          </div>
 
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Last Update:</span>
-                              <div className="font-medium">{sensor.lastUpdate}</div>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Battery:</span>
-                              <div className={`font-medium ${getBatteryColor(sensor.batteryLevel)}`}>
-                                {sensor.batteryLevel}%
-                              </div>
-                            </div>
-                          </div>
-
+                        {/* Alerts */}
+                        {sensor.alerts.length > 0 && (
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Battery Level</span>
-                              <span>{sensor.batteryLevel}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  sensor.batteryLevel > 50 ? 'bg-green-500' :
-                                  sensor.batteryLevel > 20 ? 'bg-yellow-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${sensor.batteryLevel}%` }}
-                              />
-                            </div>
+                            <h4 className="text-sm font-medium text-orange-600">Active Alerts</h4>
+                            {sensor.alerts.map((alert, idx) => (
+                              <div key={idx} className="flex items-center space-x-2 text-xs">
+                                <AlertTriangle className="h-3 w-3 text-orange-500" />
+                                <span>{alert}</span>
+                              </div>
+                            ))}
                           </div>
+                        )}
 
-                          {sensor.threshold && (
-                            <div className="text-xs text-muted-foreground">
-                              Range: {sensor.threshold.min} - {sensor.threshold.max} {sensor.unit}
-                            </div>
-                          )}
-
-                          {sensor.status === 'warning' && (
-                            <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm">
-                              <div className="flex items-center space-x-2">
-                                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                <span className="text-yellow-700 dark:text-yellow-300">
-                                  Low battery - replace soon
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {sensor.status === 'offline' && (
-                            <div className="p-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded text-sm">
-                              <div className="flex items-center space-x-2">
-                                <AlertTriangle className="h-4 w-4 text-red-500" />
-                                <span className="text-red-700 dark:text-red-300">
-                                  Sensor offline - check connection
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        {/* Last Update */}
+                        <p className="text-xs text-muted-foreground">
+                          Last update: {new Date(sensor.timestamp).toLocaleString()}
+                        </p>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -460,202 +437,86 @@ export default function SensorsPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="charts" className="space-y-6">
-            <Card>
+          <TabsContent value="analytics" className="space-y-6">
+            <Card className="premium-card">
               <CardHeader>
-                <CardTitle>Real-time Environmental Data</CardTitle>
+                <CardTitle>Sensor Performance Analytics</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={sensorData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-                    <XAxis dataKey="time" stroke="#6B7280" />
-                    <YAxis stroke="#6B7280" />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        backdropFilter: 'blur(12px)',
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="temperature" 
-                      stroke="#ef4444" 
-                      strokeWidth={3}
-                      dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                      name="Temperature (°C)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="humidity" 
-                      stroke="#06b6d4" 
-                      strokeWidth={3}
-                      dot={{ fill: '#06b6d4', strokeWidth: 2, r: 4 }}
-                      name="Humidity (%)"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="airQuality" 
-                      stroke="#10b981" 
-                      strokeWidth={3}
-                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                      name="Air Quality (AQI)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-4">Temperature Trends (24h)</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={generateSensorData('temperature')}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="time" />
+                        <YAxis domain={['dataMin - 1', 'dataMax + 1']} />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Heart Rate Patterns (24h)</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={generateSensorData('heart_rate')}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="time" />
+                        <YAxis />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="value" stroke="#22c55e" fill="#22c55e" fillOpacity={0.3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-6">
-            <Card>
+            <Card className="premium-card">
               <CardHeader>
-                <CardTitle>Recent Alerts</CardTitle>
+                <CardTitle>Alert Management</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { 
-                      type: 'warning', 
-                      message: 'Air Quality Sensor battery low (45%)', 
-                      time: '5 minutes ago',
-                      sensor: 'Chicken Coop - Air Quality'
-                    },
-                    { 
-                      type: 'error', 
-                      message: 'Motion Detector offline', 
-                      time: '2 hours ago',
-                      sensor: 'Feed Storage - Motion'
-                    },
-                    { 
-                      type: 'info', 
-                      message: 'Temperature spike detected', 
-                      time: '3 hours ago',
-                      sensor: 'Main Barn - Temperature'
-                    },
-                    { 
-                      type: 'warning', 
-                      message: 'Water level below threshold', 
-                      time: '6 hours ago',
-                      sensor: 'Pasture A - Water Tank'
-                    },
-                  ].map((alert, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
-                      className={`p-4 border rounded-lg ${
-                        alert.type === 'error' ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20' :
-                        alert.type === 'warning' ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20' :
-                        'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20'
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <AlertTriangle className={`h-5 w-5 mt-0.5 ${
-                          alert.type === 'error' ? 'text-red-500' :
-                          alert.type === 'warning' ? 'text-yellow-500' :
-                          'text-blue-500'
-                        }`} />
-                        <div className="flex-1">
-                          <h4 className="font-medium">{alert.message}</h4>
-                          <p className="text-sm text-muted-foreground">{alert.sensor}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
+                  {sensorDevices
+                    .filter(sensor => sensor.alerts.length > 0)
+                    .map((sensor) => (
+                      <div key={sensor.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{sensor.name}</h4>
+                          <Badge variant="outline" className="text-orange-600">
+                            {sensor.alerts.length} alert(s)
+                          </Badge>
+                        </div>
+                        <div className="space-y-2">
+                          {sensor.alerts.map((alert, idx) => (
+                            <div key={idx} className="flex items-center space-x-2 text-sm">
+                              <AlertTriangle className="h-4 w-4 text-orange-500" />
+                              <span>{alert}</span>
+                              <Button size="sm" variant="outline" className="ml-auto">
+                                Acknowledge
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
+                    ))}
+
+                  {sensorDevices.every(sensor => sensor.alerts.length === 0) && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No active alerts</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Add Sensor Modal */}
-      <Dialog open={sensorModalOpen} onOpenChange={setSensorModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Sensor</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="sensor-name">Sensor Name *</Label>
-              <Input
-                id="sensor-name"
-                value={newSensor.name}
-                onChange={(e) => setNewSensor(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter sensor name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sensor-type">Sensor Type *</Label>
-              <Select value={newSensor.type} onValueChange={(value: Sensor['type']) => setNewSensor(prev => ({ ...prev, type: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="temperature">Temperature</SelectItem>
-                  <SelectItem value="humidity">Humidity</SelectItem>
-                  <SelectItem value="air_quality">Air Quality</SelectItem>
-                  <SelectItem value="water_level">Water Level</SelectItem>
-                  <SelectItem value="motion">Motion</SelectItem>
-                  <SelectItem value="weight">Weight</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sensor-location">Location *</Label>
-              <Input
-                id="sensor-location"
-                value={newSensor.location}
-                onChange={(e) => setNewSensor(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Enter sensor location"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="threshold-min">Min Threshold</Label>
-                <Input
-                  id="threshold-min"
-                  type="number"
-                  value={newSensor.threshold.min}
-                  onChange={(e) => setNewSensor(prev => ({ 
-                    ...prev, 
-                    threshold: { ...prev.threshold, min: parseFloat(e.target.value) || 0 }
-                  }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="threshold-max">Max Threshold</Label>
-                <Input
-                  id="threshold-max"
-                  type="number"
-                  value={newSensor.threshold.max}
-                  onChange={(e) => setNewSensor(prev => ({ 
-                    ...prev, 
-                    threshold: { ...prev.threshold, max: parseFloat(e.target.value) || 100 }
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setSensorModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={addSensor}>
-                Add Sensor
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 }

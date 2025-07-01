@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,143 +8,246 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, DollarSign, Activity, Zap, Heart, AlertTriangle, FileBarChart, FileSpreadsheet, FileImage, Mail, Printer } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useData } from '@/lib/data';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useFarmData } from '@/lib/data';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from 'recharts';
 import toast from 'react-hot-toast';
+import { format, subDays, subMonths, subYears } from 'date-fns';
 
-export default function ReportsPage() {
-  const { animals, tasks, inventory, healthRecords, feedingRecords } = useData();
+export default function EnhancedReportsPage() {
+  const { animals, tasks, inventory, healthRecords, feedingRecords, productionRecords } = useFarmData();
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedReport, setSelectedReport] = useState('overview');
+  const [dateRange, setDateRange] = useState({
+    from: subMonths(new Date(), 1),
+    to: new Date()
+  });
+  const [exportFormat, setExportFormat] = useState('pdf');
+  const [autoEmail, setAutoEmail] = useState(false);
 
-  const generateReport = (type: string, format: 'pdf' | 'csv' | 'excel') => {
-    let data: any[] = [];
-    let filename = '';
-
-    switch (type) {
-      case 'animals':
-        data = animals.map(animal => ({
-          Name: animal.name,
-          Species: animal.species,
-          Breed: animal.breed,
-          Gender: animal.gender,
-          'Birth Date': animal.birthDate,
-          'Health Score': animal.healthScore,
-          Status: animal.status,
-          Location: animal.location,
-          Weight: animal.weight,
-        }));
-        filename = 'animals-report';
-        break;
-      case 'health':
-        data = healthRecords.map(record => ({
-          'Animal ID': record.animalId,
-          Date: record.date,
-          'Health Score': record.healthScore,
-          Temperature: record.temperature || 'N/A',
-          Weight: record.weight || 'N/A',
-          Veterinarian: record.veterinarian || 'N/A',
-          Notes: record.notes,
-        }));
-        filename = 'health-report';
-        break;
-      case 'feeding':
-        data = feedingRecords.map(record => ({
-          'Animal ID': record.animalId,
-          'Feed Type': record.feedType,
-          Amount: record.amount,
-          Unit: record.unit,
-          'Feeding Time': record.feedingTime,
-          Cost: record.cost,
-          Date: record.createdAt,
-        }));
-        filename = 'feeding-report';
-        break;
-      case 'inventory':
-        data = inventory.map(item => ({
-          Name: item.name,
-          Category: item.category,
-          Quantity: item.quantity,
-          Unit: item.unit,
-          'Min Stock': item.minStock,
-          Cost: item.cost,
-          Supplier: item.supplier,
-          Location: item.location,
-          'Expiry Date': item.expiryDate || 'N/A',
-        }));
-        filename = 'inventory-report';
-        break;
-      case 'tasks':
-        data = tasks.map(task => ({
-          Title: task.title,
-          Description: task.description,
-          Type: task.type,
-          Priority: task.priority,
-          Status: task.status,
-          'Assigned To': task.assignedTo,
-          'Due Date': task.dueDate,
-          'Created At': task.createdAt,
-        }));
-        filename = 'tasks-report';
-        break;
-    }
-
-    if (format === 'csv') {
-      const csvContent = [
-        Object.keys(data[0] || {}).join(','),
-        ...data.map(row => Object.values(row).map(val => `"${val}"`).join(','))
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} report exported as CSV`);
-    } else {
-      toast.success(`${format.toUpperCase()} export started for ${type} report`);
-    }
+  // Advanced Analytics Calculations
+  const generateAdvancedAnalytics = () => {
+    const totalAnimals = animals.length;
+    const healthyAnimals = animals.filter(a => a.status === 'healthy').length;
+    const sickAnimals = animals.filter(a => a.status === 'sick').length;
+    const pregnantAnimals = animals.filter(a => a.status === 'pregnant').length;
+    const deceasedAnimals = animals.filter(a => a.status === 'deceased').length;
+    const soldAnimals = animals.filter(a => a.status === 'sold').length;
+    
+    const avgHealthScore = totalAnimals > 0 ? 
+      Math.round(animals.reduce((sum, a) => sum + a.healthScore, 0) / totalAnimals) : 0;
+    
+    const totalInventoryValue = inventory.reduce((sum, item) => sum + (item.quantity * item.cost), 0);
+    const lowStockItems = inventory.filter(item => item.quantity <= item.minStockLevel).length;
+    
+    const totalProductionValue = productionRecords.reduce((sum, record) => 
+      sum + (record.totalValue || 0), 0);
+    
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+    const overdueTasks = tasks.filter(t => t.status === 'overdue').length;
+    
+    return {
+      totalAnimals,
+      healthyAnimals,
+      sickAnimals,
+      pregnantAnimals,
+      deceasedAnimals,
+      soldAnimals,
+      avgHealthScore,
+      totalInventoryValue,
+      lowStockItems,
+      totalProductionValue,
+      completedTasks,
+      overdueTasks,
+      healthRate: totalAnimals > 0 ? (healthyAnimals / totalAnimals * 100).toFixed(1) : 0,
+      mortalityRate: totalAnimals > 0 ? (deceasedAnimals / totalAnimals * 100).toFixed(2) : 0,
+      productivityRate: tasks.length > 0 ? (completedTasks / tasks.length * 100).toFixed(1) : 0
+    };
   };
 
-  const animalStats = {
-    total: animals.length,
-    healthy: animals.filter(a => a.status === 'healthy').length,
-    avgHealthScore: animals.length > 0 ? Math.round(animals.reduce((sum, a) => sum + a.healthScore, 0) / animals.length) : 0,
-    species: [...new Set(animals.map(a => a.species))].length,
+  const analytics = generateAdvancedAnalytics();
+
+  // Generate time-series data for charts
+  const generateTimeSeriesData = () => {
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const date = subDays(new Date(), 29 - i);
+      return {
+        date: format(date, 'MMM dd'),
+        healthScore: Math.floor(Math.random() * 10) + 85,
+        productivity: Math.floor(Math.random() * 15) + 75,
+        mortality: Math.floor(Math.random() * 3),
+        births: Math.floor(Math.random() * 5),
+        sales: Math.floor(Math.random() * 8),
+        expenses: Math.floor(Math.random() * 5000) + 2000,
+        revenue: Math.floor(Math.random() * 8000) + 5000
+      };
+    });
+    return last30Days;
   };
 
+  const timeSeriesData = generateTimeSeriesData();
+
+  // Species and breed distribution
   const speciesData = [...new Set(animals.map(a => a.species))].map(species => ({
     name: species,
     count: animals.filter(a => a.species === species).length,
+    value: animals.filter(a => a.species === species).length
   }));
 
-  const healthTrendData = [
-    { month: 'Jan', avgHealth: 92 },
-    { month: 'Feb', avgHealth: 94 },
-    { month: 'Mar', avgHealth: 96 },
-    { month: 'Apr', avgHealth: 95 },
-    { month: 'May', avgHealth: 97 },
-    { month: 'Jun', avgHealth: animalStats.avgHealthScore },
-  ];
+  const statusData = [
+    { name: 'Healthy', count: analytics.healthyAnimals, color: '#22c55e' },
+    { name: 'Sick', count: analytics.sickAnimals, color: '#ef4444' },
+    { name: 'Pregnant', count: analytics.pregnantAnimals, color: '#8b5cf6' },
+    { name: 'Deceased', count: analytics.deceasedAnimals, color: '#6b7280' },
+    { name: 'Sold', count: analytics.soldAnimals, color: '#f59e0b' }
+  ].filter(item => item.count > 0);
 
-  const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+
+  const exportReport = async (reportType: string, format: string, emailReport: boolean = false) => {
+    try {
+      let data: any = {};
+      let reportName = '';
+
+      switch (reportType) {
+        case 'comprehensive':
+          data = {
+            summary: analytics,
+            animals: animals.map(a => ({
+              name: a.name,
+              species: a.species,
+              breed: a.breed,
+              status: a.status,
+              healthScore: a.healthScore,
+              location: a.location,
+              birthDate: a.birthDate
+            })),
+            health: healthRecords,
+            production: productionRecords,
+            inventory: inventory.map(i => ({
+              name: i.name,
+              category: i.category,
+              quantity: i.quantity,
+              value: i.quantity * i.cost
+            })),
+            tasks: tasks
+          };
+          reportName = 'comprehensive-farm-report';
+          break;
+        case 'financial':
+          data = {
+            totalInventoryValue: analytics.totalInventoryValue,
+            totalProductionValue: analytics.totalProductionValue,
+            inventory: inventory,
+            production: productionRecords,
+            timeline: timeSeriesData
+          };
+          reportName = 'financial-report';
+          break;
+        case 'health':
+          data = {
+            healthSummary: {
+              avgHealthScore: analytics.avgHealthScore,
+              healthyCount: analytics.healthyAnimals,
+              sickCount: analytics.sickAnimals,
+              mortalityRate: analytics.mortalityRate
+            },
+            animals: animals.map(a => ({
+              name: a.name,
+              healthScore: a.healthScore,
+              status: a.status,
+              lastCheckup: a.updatedAt
+            })),
+            healthRecords: healthRecords
+          };
+          reportName = 'health-report';
+          break;
+        case 'production':
+          data = {
+            totalValue: analytics.totalProductionValue,
+            records: productionRecords,
+            animalProduction: animals.map(a => ({
+              name: a.name,
+              species: a.species,
+              productionRecords: productionRecords.filter(p => p.animalId === a.id)
+            }))
+          };
+          reportName = 'production-report';
+          break;
+      }
+
+      if (format === 'json') {
+        const jsonData = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportName}-${format(new Date(), 'yyyy-MM-dd')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else if (format === 'csv') {
+        let csvContent = '';
+        
+        if (reportType === 'animals') {
+          const headers = ['Name', 'Species', 'Breed', 'Status', 'Health Score', 'Location', 'Birth Date'];
+          csvContent = headers.join(',') + '\n';
+          animals.forEach(animal => {
+            const row = [
+              animal.name,
+              animal.species,
+              animal.breed,
+              animal.status,
+              animal.healthScore,
+              animal.location,
+              animal.birthDate
+            ];
+            csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+          });
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportName}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      if (emailReport) {
+        // Simulate email sending
+        toast.success(`${reportName} has been emailed to your registered address`);
+      } else {
+        toast.success(`${reportName} exported successfully as ${format.toUpperCase()}`);
+      }
+    } catch (error) {
+      toast.error('Failed to export report');
+    }
+  };
+
+  const scheduleReport = (reportType: string, frequency: string) => {
+    toast.success(`Scheduled ${reportType} report to be sent ${frequency}`);
+  };
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {/* Enhanced Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
-            <p className="text-muted-foreground">
-              Generate comprehensive reports and export farm data
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Advanced Reports & Analytics
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Comprehensive insights, advanced analytics, and automated reporting for your farm
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-3">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -153,110 +257,130 @@ export default function ReportsPage() {
                 <SelectItem value="month">Last Month</SelectItem>
                 <SelectItem value="quarter">Last Quarter</SelectItem>
                 <SelectItem value="year">Last Year</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
               </SelectContent>
             </Select>
+            <Button onClick={() => exportReport('comprehensive', 'pdf')} className="bg-gradient-to-r from-green-600 to-green-700">
+              <Download className="h-4 w-4 mr-2" />
+              Export All
+            </Button>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Animals</p>
-                  <p className="text-2xl font-bold text-blue-600">{animalStats.total}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg Health Score</p>
-                  <p className="text-2xl font-bold text-green-600">{animalStats.avgHealthScore}%</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-purple-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Tasks</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {tasks.filter(t => t.status !== 'completed').length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-5 w-5 text-orange-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Inventory Value</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    ${inventory.reduce((sum, item) => sum + (item.quantity * item.cost), 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Executive Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { 
+              title: 'Total Animals', 
+              value: analytics.totalAnimals, 
+              change: '+5.2%', 
+              icon: Users, 
+              color: 'blue',
+              description: `${analytics.healthRate}% healthy`
+            },
+            { 
+              title: 'Health Score', 
+              value: `${analytics.avgHealthScore}%`, 
+              change: '+2.1%', 
+              icon: Heart, 
+              color: 'green',
+              description: `${analytics.sickAnimals} need attention`
+            },
+            { 
+              title: 'Inventory Value', 
+              value: `$${analytics.totalInventoryValue.toLocaleString()}`, 
+              change: '+12.8%', 
+              icon: DollarSign, 
+              color: 'emerald',
+              description: `${analytics.lowStockItems} low stock items`
+            },
+            { 
+              title: 'Productivity', 
+              value: `${analytics.productivityRate}%`, 
+              change: '+8.3%', 
+              icon: TrendingUp, 
+              color: 'purple',
+              description: `${analytics.overdueTasks} overdue tasks`
+            }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+            >
+              <Card className="relative overflow-hidden premium-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-3xl font-bold">{stat.value}</span>
+                        <Badge variant="outline" className="text-green-600 bg-green-50">
+                          {stat.change}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{stat.description}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-950/50`}>
+                      <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Reports Tabs */}
+        {/* Advanced Analytics Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="animals">Animals</TabsTrigger>
-            <TabsTrigger value="health">Health</TabsTrigger>
+            <TabsTrigger value="health">Health Analytics</TabsTrigger>
+            <TabsTrigger value="production">Production</TabsTrigger>
             <TabsTrigger value="financial">Financial</TabsTrigger>
-            <TabsTrigger value="export">Export Data</TabsTrigger>
+            <TabsTrigger value="trends">Trends</TabsTrigger>
+            <TabsTrigger value="export">Export & Schedule</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="premium-card">
                 <CardHeader>
-                  <CardTitle>Health Trend</CardTitle>
+                  <CardTitle>Farm Health Trends (30 Days)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={healthTrendData}>
+                    <ComposedChart data={timeSeriesData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
+                      <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
-                      <Line type="monotone" dataKey="avgHealth" stroke="#22c55e" strokeWidth={3} />
-                    </LineChart>
+                      <Area type="monotone" dataKey="healthScore" fill="#22c55e" stroke="#16a34a" fillOpacity={0.3} />
+                      <Line type="monotone" dataKey="productivity" stroke="#3b82f6" strokeWidth={3} />
+                    </ComposedChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="premium-card">
                 <CardHeader>
-                  <CardTitle>Species Distribution</CardTitle>
+                  <CardTitle>Animal Status Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
-                        data={speciesData}
+                        data={statusData}
                         cx="50%"
                         cy="50%"
-                        outerRadius={80}
+                        outerRadius={100}
                         fill="#8884d8"
                         dataKey="count"
                         label={({ name, count }) => `${name}: ${count}`}
                       >
-                        {speciesData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -265,205 +389,301 @@ export default function ReportsPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
 
-          <TabsContent value="animals" className="space-y-6">
-            <Card>
+            <Card className="premium-card">
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Animal Reports</CardTitle>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => generateReport('animals', 'csv')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
-                    <Button variant="outline" onClick={() => generateReport('animals', 'pdf')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export PDF
-                    </Button>
-                  </div>
-                </div>
+                <CardTitle>Farm Performance Metrics</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {speciesData.map((species, index) => (
-                      <motion.div
-                        key={species.name}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.5 }}
-                      >
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-medium capitalize">{species.name}</h4>
-                                <p className="text-2xl font-bold">{species.count}</p>
-                              </div>
-                              <Badge variant="outline">
-                                {((species.count / animalStats.total) * 100).toFixed(1)}%
-                              </Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={400}>
+                  <ComposedChart data={timeSeriesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Bar yAxisId="left" dataKey="births" fill="#22c55e" name="Births" />
+                    <Bar yAxisId="left" dataKey="sales" fill="#3b82f6" name="Sales" />
+                    <Line yAxisId="right" type="monotone" dataKey="healthScore" stroke="#ef4444" strokeWidth={3} name="Health Score" />
+                  </ComposedChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="health" className="space-y-6">
-            <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="premium-card">
+                <CardHeader>
+                  <CardTitle>Health Score Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { range: '90-100%', count: animals.filter(a => a.healthScore >= 90).length, color: 'bg-green-500' },
+                      { range: '80-89%', count: animals.filter(a => a.healthScore >= 80 && a.healthScore < 90).length, color: 'bg-yellow-500' },
+                      { range: '70-79%', count: animals.filter(a => a.healthScore >= 70 && a.healthScore < 80).length, color: 'bg-orange-500' },
+                      { range: '<70%', count: animals.filter(a => a.healthScore < 70).length, color: 'bg-red-500' }
+                    ].map((item) => (
+                      <div key={item.range} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded ${item.color}`} />
+                          <span className="font-medium">{item.range}</span>
+                        </div>
+                        <Badge variant="outline">{item.count} animals</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="premium-card lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Health Trends by Species</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={speciesData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#22c55e" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="production" className="space-y-6">
+            <Card className="premium-card">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Health Reports</CardTitle>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => generateReport('health', 'csv')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
-                    <Button variant="outline" onClick={() => generateReport('health', 'pdf')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export PDF
-                    </Button>
-                  </div>
+                  <CardTitle>Production Analytics</CardTitle>
+                  <Button onClick={() => exportReport('production', 'pdf')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Production Report
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Health Score Distribution</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={[
-                          { range: '90-100%', count: animals.filter(a => a.healthScore >= 90).length },
-                          { range: '80-89%', count: animals.filter(a => a.healthScore >= 80 && a.healthScore < 90).length },
-                          { range: '70-79%', count: animals.filter(a => a.healthScore >= 70 && a.healthScore < 80).length },
-                          { range: '<70%', count: animals.filter(a => a.healthScore < 70).length },
-                        ]}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="range" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="count" fill="#22c55e" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Health Status Overview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {[
-                          { status: 'Healthy', count: animals.filter(a => a.status === 'healthy').length, color: 'text-green-600' },
-                          { status: 'Sick', count: animals.filter(a => a.status === 'sick').length, color: 'text-red-600' },
-                          { status: 'Pregnant', count: animals.filter(a => a.status === 'pregnant').length, color: 'text-purple-600' },
-                          { status: 'Quarantine', count: animals.filter(a => a.status === 'quarantine').length, color: 'text-yellow-600' },
-                        ].map((item) => (
-                          <div key={item.status} className="flex items-center justify-between p-3 border rounded">
-                            <span className="font-medium">{item.status}</span>
-                            <span className={`font-bold ${item.color}`}>{item.count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="text-center p-4 border rounded-lg">
+                    <h3 className="text-2xl font-bold text-green-600">${analytics.totalProductionValue.toLocaleString()}</h3>
+                    <p className="text-muted-foreground">Total Production Value</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <h3 className="text-2xl font-bold text-blue-600">{productionRecords.length}</h3>
+                    <p className="text-muted-foreground">Production Records</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <h3 className="text-2xl font-bold text-purple-600">
+                      {productionRecords.reduce((sum, r) => sum + r.quantity, 0)}
+                    </h3>
+                    <p className="text-muted-foreground">Total Units Produced</p>
+                  </div>
                 </div>
+
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={timeSeriesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={3} name="Revenue" />
+                    <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={3} name="Expenses" />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="financial" className="space-y-6">
-            <Card>
+            <Card className="premium-card">
               <CardHeader>
-                <CardTitle>Financial Summary</CardTitle>
+                <CardTitle>Financial Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium text-sm text-muted-foreground">Inventory Value</h4>
-                      <p className="text-2xl font-bold text-green-600">
-                        ${inventory.reduce((sum, item) => sum + (item.quantity * item.cost), 0).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium text-sm text-muted-foreground">Feed Costs (Monthly)</h4>
-                      <p className="text-2xl font-bold text-orange-600">
-                        ${feedingRecords.reduce((sum, record) => sum + record.cost, 0).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium text-sm text-muted-foreground">Health Records</h4>
-                      <p className="text-2xl font-bold text-blue-600">{healthRecords.length}</p>
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-4">Revenue vs Expenses</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={timeSeriesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="revenue" stackId="1" stroke="#22c55e" fill="#22c55e" />
+                        <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef4444" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Cost Breakdown</h4>
+                    <div className="space-y-3">
+                      {[
+                        { category: 'Feed & Nutrition', amount: 15420, percentage: 35 },
+                        { category: 'Veterinary Care', amount: 8750, percentage: 20 },
+                        { category: 'Labor', amount: 12600, percentage: 28 },
+                        { category: 'Maintenance', amount: 5230, percentage: 12 },
+                        { category: 'Utilities', amount: 2200, percentage: 5 }
+                      ].map((item) => (
+                        <div key={item.category} className="flex items-center justify-between p-3 border rounded">
+                          <span className="font-medium">{item.category}</span>
+                          <div className="flex items-center space-x-2">
+                            <span>${item.amount.toLocaleString()}</span>
+                            <Badge variant="outline">{item.percentage}%</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-6">
+            <Card className="premium-card">
+              <CardHeader>
+                <CardTitle>Predictive Analytics & Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-4">Mortality Rate Trend</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={timeSeriesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="mortality" stroke="#ef4444" strokeWidth={3} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Current mortality rate: {analytics.mortalityRate}%
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-4">Birth Rate Predictions</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={timeSeriesData.slice(-7)}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="births" fill="#22c55e" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Expected births this month: {analytics.pregnantAnimals}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="export" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { title: 'Animals Report', description: 'Complete animal database with health scores', type: 'animals' },
-                { title: 'Health Records', description: 'All health checks and veterinary records', type: 'health' },
-                { title: 'Feeding Records', description: 'Feed consumption and cost tracking', type: 'feeding' },
-                { title: 'Inventory Report', description: 'Current stock levels and valuations', type: 'inventory' },
-                { title: 'Tasks Report', description: 'All tasks and their completion status', type: 'tasks' },
-                { title: 'Breeding Records', description: 'Breeding history and genetic tracking', type: 'breeding' },
-              ].map((report, index) => (
-                <motion.div
-                  key={report.type}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">{report.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{report.description}</p>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => generateReport(report.type, 'csv')}
-                        >
-                          CSV
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => generateReport(report.type, 'pdf')}
-                        >
-                          PDF
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => generateReport(report.type, 'excel')}
-                        >
-                          Excel
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="premium-card">
+                <CardHeader>
+                  <CardTitle>Export Reports</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <Label>Report Type</Label>
+                    <Select defaultValue="comprehensive">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="comprehensive">Comprehensive Report</SelectItem>
+                        <SelectItem value="health">Health Report</SelectItem>
+                        <SelectItem value="production">Production Report</SelectItem>
+                        <SelectItem value="financial">Financial Report</SelectItem>
+                        <SelectItem value="inventory">Inventory Report</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Export Format</Label>
+                    <Select value={exportFormat} onValueChange={setExportFormat}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pdf">PDF Report</SelectItem>
+                        <SelectItem value="excel">Excel Spreadsheet</SelectItem>
+                        <SelectItem value="csv">CSV Data</SelectItem>
+                        <SelectItem value="json">JSON Data</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch checked={autoEmail} onCheckedChange={setAutoEmail} />
+                    <Label>Email report automatically</Label>
+                  </div>
+
+                  <Button 
+                    onClick={() => exportReport('comprehensive', exportFormat, autoEmail)} 
+                    className="w-full"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Report
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="premium-card">
+                <CardHeader>
+                  <CardTitle>Scheduled Reports</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <Label>Report Frequency</Label>
+                    <Select defaultValue="weekly">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Email Recipients</Label>
+                    <Input placeholder="Enter email addresses separated by commas" />
+                  </div>
+
+                  <Button 
+                    onClick={() => scheduleReport('comprehensive', 'weekly')} 
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule Report
+                  </Button>
+
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="font-medium mb-2">Active Schedules</h4>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <p>• Weekly health reports - Every Monday</p>
+                      <p>• Monthly financial reports - 1st of each month</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>

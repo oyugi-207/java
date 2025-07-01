@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAuth } from './auth';
@@ -759,10 +758,10 @@ export const useDataStore = create<DataState>()(
 // Create filtered data hooks for the current user's farm
 export const useFarmData = () => {
   const store = useDataStore();
-  
+
   try {
     const farmId = getCurrentFarmId();
-    
+
     return {
       ...store,
       animals: store.animals.filter(animal => animal.farmId === farmId),
