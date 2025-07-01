@@ -124,8 +124,8 @@ export interface Database {
           animal_id?: string | null;
           purchase_date?: string | null;
           sale_date?: string | null;
-          purchase_price?: number | null;
-          sale_price?: number | null;
+          purchase_price?: string | null;
+          sale_price?: string | null;
         };
       };
       health_records: {
