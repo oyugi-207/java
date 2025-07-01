@@ -172,10 +172,6 @@ export default function HealthPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="healthy">Healthy</SelectItem>
-                  <SelectItem value="sick">Sick</SelectItem>
-                  <SelectItem value="pregnant">Pregnant</SelectItem>
-                  <SelectItem value="quarantine">Quarantine</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -188,7 +184,7 @@ export default function HealthPage() {
             {filteredAnimals.map((animal, index) => {
               const animalHealthRecords = getAnimalHealthRecords(animal.id);
               const latestRecord = animalHealthRecords[0];
-              
+
               return (
                 <motion.div
                   key={animal.id}
@@ -228,7 +224,7 @@ export default function HealthPage() {
                           <TabsTrigger value="records">Records</TabsTrigger>
                           <TabsTrigger value="actions">Actions</TabsTrigger>
                         </TabsList>
-                        
+
                         <TabsContent value="overview" className="space-y-3 mt-4">
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
@@ -250,7 +246,7 @@ export default function HealthPage() {
                               <span className="ml-2 font-medium capitalize">{animal.gender}</span>
                             </div>
                           </div>
-                          
+
                           {latestRecord && (
                             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                               <h4 className="font-medium text-sm mb-2">Latest Health Check</h4>
@@ -266,7 +262,7 @@ export default function HealthPage() {
                             </div>
                           )}
                         </TabsContent>
-                        
+
                         <TabsContent value="records" className="mt-4">
                           {animalHealthRecords.length > 0 ? (
                             <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -297,7 +293,7 @@ export default function HealthPage() {
                             <p className="text-sm text-muted-foreground">No health records found</p>
                           )}
                         </TabsContent>
-                        
+
                         <TabsContent value="actions" className="mt-4">
                           <div className="space-y-2">
                             <Button 
@@ -363,13 +359,13 @@ export default function HealthPage() {
         onOpenChange={setHealthModalOpen}
         animal={selectedAnimal}
       />
-      
+
       <VaccinationModal
         open={vaccinationModalOpen}
         onOpenChange={setVaccinationModalOpen}
         animal={selectedAnimal}
       />
-      
+
       <TreatmentModal
         open={treatmentModalOpen}
         onOpenChange={setTreatmentModalOpen}

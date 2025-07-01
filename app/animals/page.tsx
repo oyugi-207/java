@@ -35,7 +35,7 @@ export default function AnimalsPage() {
                          animal.breed.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSpecies = speciesFilter === 'all' || animal.species === speciesFilter;
     const matchesStatus = statusFilter === 'all' || animal.status === statusFilter;
-    
+
     return matchesSearch && matchesSpecies && matchesStatus;
   });
 
@@ -61,13 +61,13 @@ export default function AnimalsPage() {
       name: animal.name,
       species: animal.species,
     };
-    
+
     // In a real app, this would generate an actual QR code
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 200;
     canvas.height = 200;
-    
+
     if (ctx) {
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, 200, 200);
@@ -267,7 +267,7 @@ export default function AnimalsPage() {
                         </div>
                         <span className="font-semibold">{animal.healthScore}%</span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Calendar className="h-4 w-4 text-blue-500" />
@@ -277,7 +277,7 @@ export default function AnimalsPage() {
                           {format(new Date(animal.birthDate), 'MMM yyyy')}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <MapPin className="h-4 w-4 text-green-500" />
@@ -285,7 +285,7 @@ export default function AnimalsPage() {
                         </div>
                         <span className="text-sm">{animal.location}</span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Weight</span>
                         <span className="text-sm font-medium">{animal.weight} kg</span>

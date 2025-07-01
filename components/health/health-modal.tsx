@@ -60,7 +60,7 @@ export function HealthModal({ open, onOpenChange, animal }: HealthModalProps) {
         weight: data.weight || undefined,
         veterinarian: data.veterinarian || undefined,
       });
-      
+
       toast.success('Health check recorded successfully');
       onOpenChange(false);
       form.reset();
