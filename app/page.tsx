@@ -155,21 +155,21 @@ export default function HomePage() {
             transition={{ delay: 0.2, duration: 0.5 }}
           >
             <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Pending Tasks</CardTitle>
-                  <Calendar className="h-4 w-4 text-amber-500" />
+                  <Calendar className="h-4 w-4 text-orange-500" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-amber-600 mb-1">
+                <div className="text-3xl font-bold text-orange-600 mb-1">
                   {tasks?.filter(task => task.status === 'pending').length || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Tasks requiring attention
                 </p>
-                <Badge variant="secondary" className="mt-2 bg-amber-50 text-amber-700">
+                <Badge variant="secondary" className="mt-2 bg-orange-50 text-orange-700">
                   Due this week
                 </Badge>
               </CardContent>

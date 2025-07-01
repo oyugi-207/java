@@ -44,7 +44,7 @@ export default function AnimalsPage() {
       case 'healthy': return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300';
       case 'sick': return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
       case 'pregnant': return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300';
-      case 'quarantine': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300';
+      case 'quarantine': return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-950/50 dark:text-gray-300';
     }
   };

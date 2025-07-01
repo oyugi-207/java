@@ -35,11 +35,11 @@
 
     /* Status Colors */
     --success: 34 197 94;
-    --warning: 251 146 60;
+    --warning: 245 101 101;
     --info: 59 130 246;
     --health-excellent: 34 197 94;
     --health-good: 101 163 13;
-    --health-warning: 251 146 60;
+    --health-warning: 245 101 101;
     --health-critical: 239 68 68;
 
     /* Brand Colors */
@@ -122,7 +122,7 @@
 
   .gradient-warning {
     background: linear-gradient(135deg, 
-      rgb(251, 146, 60) 0%, 
+      rgb(245, 101, 101) 0%, 
       rgb(245, 101, 101) 100%);
   }
 
@@ -186,8 +186,8 @@
   }
 
   .health-warning {
-    @apply text-amber-700 bg-amber-50 border-amber-200 
-           dark:text-amber-300 dark:bg-amber-950/30 dark:border-amber-800/50;
+    @apply text-red-700 bg-red-50 border-red-200 
+           dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
   }
 
   .health-critical {
@@ -212,8 +212,8 @@
   }
 
   .status-quarantine {
-    @apply text-yellow-700 bg-yellow-100 border-yellow-300 
-           dark:text-yellow-300 dark:bg-yellow-950/30 dark:border-yellow-800/50;
+    @apply text-red-700 bg-red-100 border-red-300
+           dark:text-red-300 dark:bg-red-950/30 dark:border-red-800/50;
   }
 
   .status-active {
