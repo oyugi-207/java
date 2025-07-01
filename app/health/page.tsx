@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, Heart, AlertTriangle, Calendar, Syringe, Pill, Activity } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import { HealthModal } from '@/components/health/health-modal';
 import { VaccinationModal } from '@/components/health/vaccination-modal';
 import { TreatmentModal } from '@/components/health/treatment-modal';
@@ -24,7 +24,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
 export default function HealthPage() {
-  const { animals, healthRecords } = useData();
+  const { animals, healthRecords } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [healthModalOpen, setHealthModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function HealthPage() {
       case 'healthy': return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300';
       case 'sick': return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
       case 'pregnant': return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300';
-      case 'quarantine': return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300';
+      case 'quarantine': return 'bg-slate-100 text-slate-800 dark:bg-slate-950/50 dark:text-slate-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-950/50 dark:text-gray-300';
     }
   };
@@ -132,10 +132,10 @@ export default function HealthPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Quarantine</p>
-                  <p className="text-2xl font-bold text-yellow-600">{healthStats.quarantine}</p>
+                  <p className="text-2xl font-bold text-orange-600">{healthStats.quarantine}</p>
                 </div>
               </div>
             </CardContent>

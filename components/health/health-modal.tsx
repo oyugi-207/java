@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import toast from 'react-hot-toast';
 
 const healthRecordSchema = z.object({
@@ -37,7 +37,7 @@ interface HealthModalProps {
 }
 
 export function HealthModal({ open, onOpenChange, animal }: HealthModalProps) {
-  const { animals, addHealthRecord } = useData();
+  const { animals, addHealthRecord } = useFarmData();
 
   const form = useForm<HealthRecordForm>({
     resolver: zodResolver(healthRecordSchema),

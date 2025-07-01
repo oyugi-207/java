@@ -74,24 +74,30 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Welcome to AgroInsight</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="text-center pb-4">
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+            Welcome to AgroInsight
+          </DialogTitle>
+          <DialogDescription className="text-slate-600 dark:text-slate-400">
             Sign in to your account or create a new one to get started.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Sign In</TabsTrigger>
-            <TabsTrigger value="register">Sign Up</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-800">
+            <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-slate-900 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100">
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-slate-900 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100">
+              Sign Up
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
-            <Card>
+            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
               <CardHeader>
-                <CardTitle>Sign In</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-slate-800 dark:text-slate-200">Sign In</CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-400">
                   Enter your credentials to access your farm dashboard.
                 </CardDescription>
               </CardHeader>
@@ -150,10 +156,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </TabsContent>
 
           <TabsContent value="register">
-            <Card>
+            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
               <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-slate-800 dark:text-slate-200">Create Account</CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-400">
                   Set up your farm management account in minutes.
                 </CardDescription>
               </CardHeader>

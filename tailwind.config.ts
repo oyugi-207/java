@@ -1,4 +1,3 @@
-
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -25,16 +24,11 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -42,6 +36,10 @@ const config: Config = {
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -51,13 +49,14 @@ const config: Config = {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -65,27 +64,17 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        // Farm specific colors
-        farm: {
-          green: 'hsl(var(--farm-green))',
-          'light-green': 'hsl(var(--farm-light-green))',
-          sage: 'hsl(var(--farm-sage))',
-          beige: 'hsl(var(--farm-beige))',
-          brown: 'hsl(var(--farm-brown))',
-          accent: 'hsl(var(--farm-accent))',
-        },
-        // Health status colors
-        health: {
-          excellent: 'hsl(var(--health-excellent))',
-          good: 'hsl(var(--health-good))',
-          warning: 'hsl(var(--health-warning))',
-          critical: 'hsl(var(--health-critical))',
-        },
-        // Status colors
-        status: {
-          success: 'hsl(var(--success))',
-          warning: 'hsl(var(--warning))',
-          info: 'hsl(var(--info))',
+        grey: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
         },
       },
       keyframes: {
@@ -133,19 +122,6 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'scale(0.9)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
-      },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.5s ease-out',
-        'fade-in-up': 'fade-in-up 0.6s ease-out',
-        'slide-in': 'slide-in 0.3s ease-out',
-        'slide-in-right': 'slide-in-right 0.3s ease-out',
-        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'shimmer': 'shimmer 1.5s infinite',
-        'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
-        'scale-in': 'scale-in 0.3s ease-out',
       },
       backdropBlur: {
         xs: '2px',
