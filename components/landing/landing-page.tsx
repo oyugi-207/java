@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { AuthModal } from '@/components/auth/auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -27,6 +28,7 @@ import {
 
 export default function LandingPage() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const features = [
     {
@@ -163,8 +165,8 @@ export default function LandingPage() {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <Button variant="ghost">Sign In</Button>
-              <Button>Get Started</Button>
+              <Button variant="ghost" onClick={() => setShowAuthModal(true)}>Sign In</Button>
+              <Button onClick={() => setShowAuthModal(true)}>Get Started</Button>
             </div>
           </div>
         </div>
@@ -189,7 +191,11 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                onClick={() => setShowAuthModal(true)}
+              >
                 Start Free Trial
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -377,7 +383,11 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
+                  <Button 
+                    className="w-full" 
+                    variant={plan.popular ? "default" : "outline"}
+                    onClick={() => plan.name === "Enterprise" ? null : setShowAuthModal(true)}
+                  >
                     {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
                   </Button>
                 </CardContent>
@@ -398,7 +408,11 @@ export default function LandingPage() {
             Start your free trial today and see the difference in just 30 days.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100">
+            <Button 
+              size="lg" 
+              className="bg-white text-green-600 hover:bg-gray-100"
+              onClick={() => setShowAuthModal(true)}
+            >
               Start Free Trial
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
@@ -461,6 +475,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
