@@ -798,3 +798,5 @@ export const useFarmDataHook = () => {
   const store = useDataStore();
   const farmId = getCurrentFarmId();
 };
+
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || !process.env.NEXT_PUBLIC_SUPABASE_URL;

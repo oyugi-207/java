@@ -41,6 +41,8 @@ interface RegisterData {
   farmName: string;
 }
 
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 const transformProfile = (profile: Profile): User => ({
   id: profile.id,
   email: profile.email,
@@ -59,6 +61,24 @@ const transformProfile = (profile: Profile): User => ({
   }
 });
 
+const createDemoUser = (email: string, name: string, farmName?: string): User => ({
+  id: 'demo-user-' + Math.random().toString(36).substr(2, 9),
+  email,
+  name,
+  role: 'admin' as const,
+  farmId: 'demo-farm-' + Math.random().toString(36).substr(2, 9),
+  avatar: undefined,
+  farmName: farmName || 'Demo Farm',
+  preferences: {
+    currency: 'USD',
+    language: 'English',
+    timezone: 'America/Los_Angeles',
+    dateFormat: 'MM/DD/YYYY',
+    temperatureUnit: 'Celsius',
+    weightUnit: 'Kilograms',
+  }
+});
+
 export const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -68,6 +88,12 @@ export const useAuth = create<AuthState>()(
 
       initializeAuth: async () => {
         try {
+          if (isDemoMode) {
+            // In demo mode, start with no user
+            set({ user: null, isAuthenticated: false, loading: false });
+            return;
+          }
+
           const { data: { session } } = await supabase.auth.getSession();
           
           if (session?.user) {
@@ -95,6 +121,16 @@ export const useAuth = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           set({ loading: true });
+          
+          if (isDemoMode) {
+            // Demo mode login - simulate successful authentication
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+            
+            const demoUser = createDemoUser(email, 'Demo User');
+            set({ user: demoUser, isAuthenticated: true, loading: false });
+            toast.success('Welcome to demo mode!');
+            return true;
+          }
           
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -133,6 +169,16 @@ export const useAuth = create<AuthState>()(
       register: async (data: RegisterData) => {
         try {
           set({ loading: true });
+          
+          if (isDemoMode) {
+            // Demo mode registration - simulate successful account creation
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+            
+            const demoUser = createDemoUser(data.email, data.name, data.farmName);
+            set({ user: demoUser, isAuthenticated: true, loading: false });
+            toast.success('Demo account created successfully!');
+            return true;
+          }
           
           const { data: authData, error } = await supabase.auth.signUp({
             email: data.email,
