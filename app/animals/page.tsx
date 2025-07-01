@@ -16,13 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, Filter, MoreHorizontal, Heart, Calendar, MapPin, Grid, List, QrCode } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import { AnimalModal } from '@/components/animals/animal-modal';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
 export default function AnimalsPage() {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [speciesFilter, setSpeciesFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
