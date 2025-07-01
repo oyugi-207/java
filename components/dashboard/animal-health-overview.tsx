@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Heart, AlertTriangle, Activity, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useFarmData } from '@/lib/data';
+import { useFarmAnimals } from '@/lib/data';
 
 export function AnimalHealthOverview() {
-  const { animals } = useFarmData();
+  const { animals } = useFarmAnimals();
 
   const healthStats = animals.reduce(
     (acc, animal) => {

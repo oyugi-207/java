@@ -691,34 +691,43 @@ export const useDataStore = create<DataState>()(
   )
 );
 
-// Hook that returns filtered data for the current user's farm
-export const useData = () => {
+// Create filtered data hooks for the current user's farm
+export const useFarmData = () => {
   const store = useDataStore();
-  const { user } = useAuth();
+  const farmId = getCurrentFarmId();
 
-  if (!user?.farmId) {
-    return {
-      ...store,
-      animals: [],
-      tasks: [],
-      inventory: [],
-      healthRecords: [],
-      feedingRecords: [],
-      breedingRecords: [],
-      productionRecords: [],
-      staff: [],
-    };
+  if (!farmId) {
+    return store;
   }
 
   return {
     ...store,
-    animals: store.animals.filter(animal => animal.farmId === user.farmId),
-    tasks: store.tasks.filter(task => task.farmId === user.farmId),
-    inventory: store.inventory.filter(item => item.farmId === user.farmId),
-    healthRecords: store.healthRecords.filter(record => record.farm_id === user.farmId),
-    feedingRecords: store.feedingRecords.filter(record => record.farm_id === user.farmId),
-    breedingRecords: store.breedingRecords.filter(record => record.farm_id === user.farmId),
-    productionRecords: store.productionRecords.filter(record => record.farm_id === user.farmId),
-    staff: store.staff.filter(member => member.farm_id === user.farmId),
+    animals: store.animals.filter(animal => animal.farmId === farmId),
+    tasks: store.tasks.filter(task => task.farmId === farmId),
+    inventory: store.inventory.filter(item => item.farmId === farmId),
+    healthRecords: store.healthRecords.filter(record => record.farm_id === farmId),
+    feedingRecords: store.feedingRecords.filter(record => record.farm_id === farmId),
+    breedingRecords: store.breedingRecords.filter(record => record.farm_id === farmId),
+    productionRecords: store.productionRecords.filter(record => record.farm_id === farmId),
+    staff: store.staff.filter(member => member.farm_id === farmId),
   };
+};
+
+// Specific hooks for different data types
+export const useFarmAnimals = () => {
+  const store = useDataStore();
+  const farmId = getCurrentFarmId();
+  return store.animals.filter(animal => animal.farmId === farmId);
+};
+
+export const useFarmTasks = () => {
+  const store = useDataStore();
+  const farmId = getCurrentFarmId();
+  return store.tasks.filter(task => task.farmId === farmId);
+};
+
+export const useFarmInventory = () => {
+  const store = useDataStore();
+  const farmId = getCurrentFarmId();
+  return store.inventory.filter(item => item.farmId === farmId);
 };

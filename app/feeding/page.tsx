@@ -1,72 +1,45 @@
-"use client";
+
+<old_str>'use client';
 
 import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Plus, Search, Utensils, Clock, TrendingUp, AlertCircle } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { Plus, Calendar, Clock, TrendingUp, AlertTriangle, Filter, Search, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FeedingModal } from '@/components/feeding/feeding-modal';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
+import { useFarmData } from '@/lib/data';
 
 export default function FeedingPage() {
-  const { animals } = useData();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [speciesFilter, setSpeciesFilter] = useState('all');
-  const [feedingModalOpen, setFeedingModalOpen] = useState(false);
-  const [selectedAnimal, setSelectedAnimal] = useState(null);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterFeedType, setFilterFeedType] = useState<string>('all');
+  const { feedingRecords, animals } = useFarmData();
 
-  const filteredAnimals = animals.filter(animal => {
-    const matchesSearch = animal.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSpecies = speciesFilter === 'all' || animal.species === speciesFilter;
-    return matchesSearch && matchesSpecies;
+  const filteredRecords = feedingRecords.filter(record => {
+    const matchesSearch = record.feed_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || record.status === filterStatus;
+    const matchesFeedType = filterFeedType === 'all' || record.feed_type === filterFeedType;
+    
+    return matchesSearch && matchesStatus && matchesFeedType;
   });
 
-  const feedingStats = {
-    totalAnimals: animals.length,
-    dailyFeedCost: Math.round(animals.length * 15.5),
-    avgFeedConversion: 2.8,
-    feedingSchedules: animals.length * 3, // 3 meals per day
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const getFeedingSchedule = (species: string) => {
-    const schedules = {
-      cow: ['06:00', '12:00', '18:00'],
-      pig: ['07:00', '13:00', '19:00'],
-      chicken: ['06:30', '12:30', '17:30'],
-      sheep: ['07:30', '14:00', '18:30'],
-      goat: ['07:00', '13:30', '18:00'],
-      horse: ['06:00', '12:00', '18:00'],
-    };
-    return schedules[species as keyof typeof schedules] || ['07:00', '13:00', '19:00'];
-  };
-
-  const getFeedType = (species: string) => {
-    const feedTypes = {
-      cow: 'Hay, Grain, Silage',
-      pig: 'Pig Feed, Vegetables',
-      chicken: 'Layer Feed, Scratch',
-      sheep: 'Grass, Hay, Grain',
-      goat: 'Hay, Browse, Grain',
-      horse: 'Hay, Oats, Pasture',
-    };
-    return feedTypes[species as keyof typeof feedTypes] || 'Mixed Feed';
-  };
-
-  const getDailyFeedAmount = (animal: any) => {
-    const baseAmount = animal.weight * 0.025; // 2.5% of body weight
-    return Math.round(baseAmount * 10) / 10;
+  const getAnimalName = (animalId: string) => {
+    const animal = animals.find(a => a.id === animalId);
+    return animal ? `${animal.name} (${animal.tagNumber})` : 'Unknown';
   };
 
   return (
@@ -77,223 +50,468 @@ export default function FeedingPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Feeding Management</h1>
             <p className="text-muted-foreground">
-              Manage feeding schedules, track consumption, and optimize nutrition
+              Track and manage animal feeding schedules and records
             </p>
           </div>
-          <Button onClick={() => setFeedingModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Feeding Record
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Feeding Record
+            </Button>
+          </div>
         </div>
 
-        {/* Feeding Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Utensils className="h-5 w-5 text-green-500" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Animals</p>
-                  <p className="text-2xl font-bold text-green-600">{feedingStats.totalAnimals}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Today's Feedings</p>
+                  <p className="text-3xl font-bold text-blue-600">12</p>
                 </div>
+                <Calendar className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
+          
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Daily Feed Cost</p>
-                  <p className="text-2xl font-bold text-blue-600">${feedingStats.dailyFeedCost}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                  <p className="text-3xl font-bold text-green-600">8</p>
                 </div>
+                <TrendingUp className="h-8 w-8 text-green-500" />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-orange-500" />
+          
+          <Card className="border-l-4 border-l-yellow-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Feed Conversion</p>
-                  <p className="text-2xl font-bold text-orange-600">{feedingStats.avgFeedConversion}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                  <p className="text-3xl font-bold text-yellow-600">3</p>
                 </div>
+                <Clock className="h-8 w-8 text-yellow-500" />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-purple-500" />
+          
+          <Card className="border-l-4 border-l-red-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Daily Schedules</p>
-                  <p className="text-2xl font-bold text-purple-600">{feedingStats.feedingSchedules}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Overdue</p>
+                  <p className="text-3xl font-bold text-red-600">1</p>
                 </div>
+                <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filters and Search */}
         <Card>
-          <CardContent className="p-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters & Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search animals..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search feeding records..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-              <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filter by species" />
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Species</SelectItem>
-                  <SelectItem value="cow">Cow</SelectItem>
-                  <SelectItem value="pig">Pig</SelectItem>
-                  <SelectItem value="chicken">Chicken</SelectItem>
-                  <SelectItem value="sheep">Sheep</SelectItem>
-                  <SelectItem value="goat">Goat</SelectItem>
-                  <SelectItem value="horse">Horse</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterFeedType} onValueChange={setFilterFeedType}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by feed type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Feed Types</SelectItem>
+                  <SelectItem value="hay">Hay</SelectItem>
+                  <SelectItem value="grain">Grain</SelectItem>
+                  <SelectItem value="pellets">Pellets</SelectItem>
+                  <SelectItem value="supplement">Supplement</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Feeding Schedule */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredAnimals.map((animal, index) => (
-            <motion.div
-              key={animal.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-            >
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{animal.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {animal.breed} • {animal.species} • {animal.weight} kg
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300">
-                      {getDailyFeedAmount(animal)} kg/day
-                    </Badge>
+        {/* Feeding Records */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Feeding Records</CardTitle>
+            <CardDescription>
+              View and manage all feeding records for your animals
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filteredRecords.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-semibold text-gray-900">No feeding records</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Get started by adding your first feeding record.
+                  </p>
+                  <div className="mt-6">
+                    <Button onClick={() => setIsModalOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Feeding Record
+                    </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="schedule" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                      <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
-                      <TabsTrigger value="history">History</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="schedule" className="space-y-3 mt-4">
-                      <div className="space-y-2">
-                        {getFeedingSchedule(animal.species).map((time, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-2 border rounded">
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-blue-500" />
-                              <span className="font-medium">{time}</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredRecords.map((record) => (
+                    <Card key={record.id} className="hover:shadow-md transition-shadow border-l-4 border-l-green-200">
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-lg">{record.feed_type}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {getAnimalName(record.animal_id)}
+                              </p>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {(getDailyFeedAmount(animal) / 3).toFixed(1)} kg
+                            <Badge className={getStatusColor(record.status || 'pending')}>
+                              {record.status || 'pending'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Quantity</p>
+                              <p className="font-medium">{record.quantity} {record.unit}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Cost</p>
+                              <p className="font-medium">${record.cost}</p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                      <Button 
-                        size="sm" 
-                        className="w-full"
-                        onClick={() => {
-                          setSelectedAnimal(animal);
-                          setFeedingModalOpen(true);
-                        }}
-                      >
-                        Record Feeding
-                      </Button>
-                    </TabsContent>
-                    
-                    <TabsContent value="nutrition" className="mt-4">
-                      <div className="space-y-3 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Feed Type:</span>
-                          <div className="font-medium">{getFeedType(animal.species)}</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Daily Amount:</span>
-                          <div className="font-medium">{getDailyFeedAmount(animal)} kg</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Cost per Day:</span>
-                          <div className="font-medium">${(getDailyFeedAmount(animal) * 2.5).toFixed(2)}</div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Protein Content:</span>
-                          <div className="font-medium">{Math.floor(Math.random() * 10) + 15}%</div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="history" className="mt-4">
-                      <div className="space-y-2 text-sm">
-                        <div className="p-2 border rounded">
-                          <div className="flex justify-between">
-                            <span>Last Fed:</span>
-                            <span className="font-medium">
-                              {format(new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000), 'HH:mm')}
-                            </span>
+                          
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">Date</p>
+                            <p className="font-medium">
+                              {new Date(record.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          
+                          {record.notes && (
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">Notes</p>
+                              <p className="text-gray-900 line-clamp-2">{record.notes}</p>
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 pt-4 border-t">
+                            <Button variant="outline" size="sm" className="flex-1">
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              View Details
+                            </Button>
                           </div>
                         </div>
-                        <div className="p-2 border rounded">
-                          <div className="flex justify-between">
-                            <span>Weekly Consumption:</span>
-                            <span className="font-medium">
-                              {(getDailyFeedAmount(animal) * 7).toFixed(1)} kg
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-2 border rounded">
-                          <div className="flex justify-between">
-                            <span>Feed Efficiency:</span>
-                            <span className="font-medium text-green-600">
-                              {(Math.random() * 0.5 + 2.5).toFixed(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {filteredAnimals.length === 0 && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="text-muted-foreground">
-                No animals found matching your criteria.
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <FeedingModal
-        open={feedingModalOpen}
-        onOpenChange={setFeedingModalOpen}
-        animal={selectedAnimal}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </DashboardLayout>
   );
-}
+}</old_str>
+<new_str>'use client';
+
+import { useState } from 'react';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Calendar, Clock, TrendingUp, AlertTriangle, Filter, Search, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FeedingModal } from '@/components/feeding/feeding-modal';
+import { useFarmData } from '@/lib/data';
+
+export default function FeedingPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterFeedType, setFilterFeedType] = useState<string>('all');
+  const { feedingRecords, animals } = useFarmData();
+
+  const filteredRecords = feedingRecords.filter(record => {
+    const matchesSearch = record.feed_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || record.status === filterStatus;
+    const matchesFeedType = filterFeedType === 'all' || record.feed_type === filterFeedType;
+    
+    return matchesSearch && matchesStatus && matchesFeedType;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getAnimalName = (animalId: string) => {
+    const animal = animals.find(a => a.id === animalId);
+    return animal ? `${animal.name} (${animal.tagNumber})` : 'Unknown';
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Feeding Management</h1>
+            <p className="text-muted-foreground">
+              Track and manage animal feeding schedules and records
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Feeding Record
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Today's Feedings</p>
+                  <p className="text-3xl font-bold text-blue-600">12</p>
+                </div>
+                <Calendar className="h-8 w-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                  <p className="text-3xl font-bold text-green-600">8</p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-yellow-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                  <p className="text-3xl font-bold text-yellow-600">3</p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-red-500">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Overdue</p>
+                  <p className="text-3xl font-bold text-red-600">1</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters and Search */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters & Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search feeding records..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterFeedType} onValueChange={setFilterFeedType}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by feed type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Feed Types</SelectItem>
+                  <SelectItem value="hay">Hay</SelectItem>
+                  <SelectItem value="grain">Grain</SelectItem>
+                  <SelectItem value="pellets">Pellets</SelectItem>
+                  <SelectItem value="supplement">Supplement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Feeding Records */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Feeding Records</CardTitle>
+            <CardDescription>
+              View and manage all feeding records for your animals
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filteredRecords.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-semibold text-gray-900">No feeding records</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Get started by adding your first feeding record.
+                  </p>
+                  <div className="mt-6">
+                    <Button onClick={() => setIsModalOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Feeding Record
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredRecords.map((record) => (
+                    <Card key={record.id} className="hover:shadow-md transition-shadow border-l-4 border-l-green-200">
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-lg">{record.feed_type}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {getAnimalName(record.animal_id)}
+                              </p>
+                            </div>
+                            <Badge className={getStatusColor(record.status || 'pending')}>
+                              {record.status || 'pending'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Quantity</p>
+                              <p className="font-medium">{record.quantity} {record.unit}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Cost</p>
+                              <p className="font-medium">${record.cost}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="text-sm">
+                            <p className="text-muted-foreground">Date</p>
+                            <p className="font-medium">
+                              {new Date(record.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          
+                          {record.notes && (
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">Notes</p>
+                              <p className="text-gray-900 line-clamp-2">{record.notes}</p>
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2 pt-4 border-t">
+                            <Button variant="outline" size="sm" className="flex-1">
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1">
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <FeedingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </DashboardLayout>
+  );
+}</new_str>
