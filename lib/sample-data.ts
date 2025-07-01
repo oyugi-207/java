@@ -1,0 +1,51 @@
+
+export const sampleAnimals = [
+  {
+    id: 'animal_1',
+    farmId: 'farm_1',
+    name: 'Bessie',
+    species: 'Cattle',
+    breed: 'Holstein',
+    birthDate: '2022-03-15',
+    gender: 'female' as const,
+    healthScore: 85,
+    location: 'Pasture A',
+    weight: 450,
+    status: 'active' as const,
+    measurements: [],
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+  },
+  {
+    id: 'animal_2',
+    farmId: 'farm_1',
+    name: 'Charlie',
+    species: 'Cattle',
+    breed: 'Angus',
+    birthDate: '2021-11-20',
+    gender: 'male' as const,
+    healthScore: 92,
+    location: 'Pasture B',
+    weight: 650,
+    status: 'active' as const,
+    measurements: [],
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+  },
+];
+
+export const sampleTasks = [
+  {
+    id: 'task_1',
+    farmId: 'farm_1',
+    title: 'Vaccination Check',
+    description: 'Check vaccination schedules for all cattle',
+    type: 'health' as const,
+    priority: 'high' as const,
+    status: 'pending' as const,
+    dueDate: '2024-01-15',
+    createdBy: 'user_1',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+];

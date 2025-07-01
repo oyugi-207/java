@@ -1,56 +1,34 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useAuth } from './auth';
+import { dataService } from './supabase-data';
 
+// Types
 export interface Animal {
   id: string;
-  farmId: string; // Add farmId to isolate data
+  farmId: string;
   name: string;
-  species: 'cow' | 'pig' | 'chicken' | 'sheep' | 'goat' | 'horse';
+  species: string;
   breed: string;
-  gender: 'male' | 'female';
   birthDate: string;
-  weight: number;
-  healthScore: number;
-  status: 'healthy' | 'sick' | 'pregnant' | 'quarantine';
-  location: string;
+  gender: 'male' | 'female';
   motherId?: string;
   fatherId?: string;
-  image?: string;
-  notes: string;
-  vaccinations: Vaccination[];
-  treatments: Treatment[];
-  rfidTag?: string;
-  earTag?: string;
-  microchipId?: string;
+  healthScore: number;
+  location: string;
+  weight?: number;
+  status: 'active' | 'sold' | 'deceased';
   qrCode?: string;
+  rfidTag?: string;
   measurements: Measurement[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Vaccination {
-  id: string;
-  name: string;
-  date: string;
-  nextDue: string;
-  veterinarian: string;
-  notes: string;
-}
-
-export interface Treatment {
-  id: string;
-  condition: string;
-  medication: string;
-  startDate: string;
-  endDate: string;
-  veterinarian: string;
-  notes: string;
-  status: 'active' | 'completed' | 'cancelled';
-}
-
 export interface Measurement {
   id: string;
-  type: 'weight' | 'height' | 'temperature' | 'heart_rate' | 'milk_production';
+  type: 'weight' | 'height' | 'temperature' | 'heartRate' | 'other';
   value: number;
   unit: string;
   date: string;
@@ -59,111 +37,111 @@ export interface Measurement {
 
 export interface Task {
   id: string;
-  farmId: string; // Add farmId to isolate data
+  farmId: string;
   title: string;
   description: string;
-  type: 'feeding' | 'health' | 'breeding' | 'maintenance' | 'other';
+  type: 'feeding' | 'health' | 'maintenance' | 'breeding' | 'other';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
-  assignedTo: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'overdue';
+  assignedTo?: string;
   dueDate: string;
   animalId?: string;
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface InventoryItem {
   id: string;
-  farmId: string; // Add farmId to isolate data
+  farmId: string;
   name: string;
-  category: 'feed' | 'medicine' | 'equipment' | 'supplies';
+  category: 'feed' | 'medicine' | 'equipment' | 'supplies' | 'other';
   quantity: number;
   unit: string;
-  minStock: number;
-  cost: number;
-  supplier: string;
-  expiryDate?: string;
   location: string;
+  expiryDate?: string;
+  minStockLevel: number;
+  cost: number;
+  supplier?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface HealthRecord {
   id: string;
-  farmId: string; // Add farmId to isolate data
   animalId: string;
-  date: string;
-  healthScore: number;
-  temperature?: number;
-  weight?: number;
-  notes: string;
+  farmId: string;
+  type: 'vaccination' | 'treatment' | 'checkup' | 'illness';
+  title: string;
+  description: string;
   veterinarian?: string;
+  medications?: string;
+  nextDueDate?: string;
+  cost?: number;
+  status: 'scheduled' | 'completed' | 'overdue';
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface FeedingRecord {
   id: string;
-  farmId: string; // Add farmId to isolate data
   animalId: string;
+  farmId: string;
   feedType: string;
   amount: number;
   unit: string;
-  feedingTime: string;
-  cost: number;
-  notes: string;
+  cost?: number;
+  fedBy: string;
+  notes?: string;
   createdAt: string;
 }
 
 export interface BreedingRecord {
   id: string;
-  farmId: string; // Add farmId to isolate data
-  femaleId: string;
-  maleId: string;
+  motherId: string;
+  fatherId: string;
+  farmId: string;
   breedingDate: string;
-  method: 'natural' | 'ai' | 'embryo';
-  expectedDueDate?: string;
-  status: 'planned' | 'completed' | 'successful' | 'failed';
-  notes: string;
+  expectedBirthDate?: string;
+  actualBirthDate?: string;
+  offspringCount?: number;
+  success?: boolean;
+  notes?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductionRecord {
   id: string;
-  farmId: string; // Add farmId to isolate data
   animalId: string;
-  productType: 'milk' | 'eggs' | 'meat' | 'wool' | 'honey' | 'cheese';
+  farmId: string;
+  type: 'milk' | 'eggs' | 'wool' | 'meat' | 'other';
   quantity: number;
   unit: string;
-  quality: 'excellent' | 'good' | 'fair' | 'poor';
-  date: string;
-  notes: string;
+  qualityGrade?: string;
+  pricePerUnit?: number;
+  totalValue?: number;
+  recordedBy: string;
   createdAt: string;
 }
 
 export interface StaffMember {
   id: string;
-  farmId: string; // Add farmId to isolate data
+  farmId: string;
+  userId: string;
   name: string;
-  email: string;
-  role: 'manager' | 'worker' | 'veterinarian' | 'supervisor';
-  department: string;
-  phone: string;
-  avatar?: string;
-  status: 'active' | 'inactive' | 'on-leave';
-  hireDate: string;
+  role: 'admin' | 'manager' | 'worker';
   permissions: string[];
-  hoursWorked: number;
-  performance: number;
-  location: string;
   salary?: number;
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
+  hireDate: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface DataState {
+  // State
   animals: Animal[];
   tasks: Task[];
   inventory: InventoryItem[];
@@ -172,544 +150,541 @@ interface DataState {
   breedingRecords: BreedingRecord[];
   productionRecords: ProductionRecord[];
   staff: StaffMember[];
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Data fetching
+  fetchAllData: () => Promise<void>;
   
   // Animal operations
-  addAnimal: (animal: Omit<Animal, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => void;
-  updateAnimal: (id: string, animal: Partial<Animal>) => void;
-  deleteAnimal: (id: string) => void;
+  addAnimal: (animalData: Omit<Animal, 'id' | 'farmId' | 'createdAt' | 'updatedAt' | 'measurements'>) => Promise<void>;
+  updateAnimal: (id: string, animalData: Partial<Animal>) => Promise<void>;
+  deleteAnimal: (id: string) => Promise<void>;
   
   // Task operations
-  addTask: (task: Omit<Task, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => void;
-  updateTask: (id: string, task: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  
-  // Inventory operations
-  addInventoryItem: (item: Omit<InventoryItem, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => void;
-  updateInventoryItem: (id: string, item: Partial<InventoryItem>) => void;
-  deleteInventoryItem: (id: string) => void;
+  addTask: (taskData: Omit<Task, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateTask: (id: string, taskData: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
   
   // Health record operations
-  addHealthRecord: (record: Omit<HealthRecord, 'id' | 'farmId' | 'createdAt'>) => void;
-  updateHealthRecord: (id: string, record: Partial<HealthRecord>) => void;
-  deleteHealthRecord: (id: string) => void;
+  addHealthRecord: (recordData: Omit<HealthRecord, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateHealthRecord: (id: string, recordData: Partial<HealthRecord>) => Promise<void>;
+  deleteHealthRecord: (id: string) => Promise<void>;
   
   // Feeding record operations
-  addFeedingRecord: (record: Omit<FeedingRecord, 'id' | 'farmId' | 'createdAt'>) => void;
-  updateFeedingRecord: (id: string, record: Partial<FeedingRecord>) => void;
-  deleteFeedingRecord: (id: string) => void;
+  addFeedingRecord: (recordData: Omit<FeedingRecord, 'id' | 'farmId' | 'createdAt'>) => Promise<void>;
   
   // Breeding record operations
-  addBreedingRecord: (record: Omit<BreedingRecord, 'id' | 'farmId' | 'createdAt'>) => void;
-  updateBreedingRecord: (id: string, record: Partial<BreedingRecord>) => void;
-  deleteBreedingRecord: (id: string) => void;
-
+  addBreedingRecord: (recordData: Omit<BreedingRecord, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  
   // Production record operations
-  addProductionRecord: (record: Omit<ProductionRecord, 'id' | 'farmId' | 'createdAt'>) => void;
-  updateProductionRecord: (id: string, record: Partial<ProductionRecord>) => void;
-  deleteProductionRecord: (id: string) => void;
-
+  addProductionRecord: (recordData: Omit<ProductionRecord, 'id' | 'farmId' | 'createdAt'>) => Promise<void>;
+  
   // Staff operations
-  addStaffMember: (staff: Omit<StaffMember, 'id' | 'farmId'>) => void;
-  updateStaffMember: (id: string, staff: Partial<StaffMember>) => void;
-  deleteStaffMember: (id: string) => void;
-
+  addStaffMember: (staffData: Omit<StaffMember, 'id' | 'farmId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateStaffMember: (id: string, staffData: Partial<StaffMember>) => Promise<void>;
+  deleteStaffMember: (id: string) => Promise<void>;
+  
   // Measurement operations
-  addMeasurement: (animalId: string, measurement: Omit<Measurement, 'id'>) => void;
-  updateMeasurement: (animalId: string, measurementId: string, measurement: Partial<Measurement>) => void;
-  deleteMeasurement: (animalId: string, measurementId: string) => void;
+  addMeasurement: (animalId: string, measurementData: Omit<Measurement, 'id'>) => Promise<void>;
+  updateMeasurement: (animalId: string, measurementId: string, measurementData: Partial<Measurement>) => Promise<void>;
+  deleteMeasurement: (animalId: string, measurementId: string) => Promise<void>;
 }
 
-// Helper function to get current user's farm ID
-const getCurrentFarmId = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  
-  try {
-    const authState = JSON.parse(localStorage.getItem('auth-storage') || '{}');
-    return authState?.state?.user?.farmId || null;
-  } catch {
-    return null;
+// Helper function to get current farm ID
+const getCurrentFarmId = (): string => {
+  const { user } = useAuth.getState();
+  if (!user?.farmId) {
+    throw new Error('No authenticated user or farm ID');
   }
+  return user.farmId;
 };
 
-// Initialize with sample data for farm-1 only
-const sampleAnimals: Animal[] = [
-  {
-    id: 'animal_1',
-    farmId: 'farm-1',
-    name: 'Bella',
-    species: 'cow',
-    breed: 'Holstein',
-    gender: 'female',
-    birthDate: '2020-03-15',
-    weight: 650,
-    healthScore: 95,
-    status: 'healthy',
-    location: 'Pasture A',
-    notes: 'High milk producer, excellent health record',
-    vaccinations: [],
-    treatments: [],
-    rfidTag: 'RF001234',
-    earTag: 'ET001',
-    microchipId: 'MC123456789',
-    measurements: [
-      { id: 'm1', type: 'weight', value: 650, unit: 'kg', date: new Date().toISOString() },
-      { id: 'm2', type: 'milk_production', value: 25, unit: 'liters/day', date: new Date().toISOString() },
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'animal_2',
-    farmId: 'farm-1',
-    name: 'Max',
-    species: 'cow',
-    breed: 'Angus',
-    gender: 'male',
-    birthDate: '2019-08-22',
-    weight: 850,
-    healthScore: 92,
-    status: 'healthy',
-    location: 'Pasture B',
-    notes: 'Prime breeding bull, excellent genetics',
-    vaccinations: [],
-    treatments: [],
-    rfidTag: 'RF001235',
-    earTag: 'ET002',
-    measurements: [
-      { id: 'm3', type: 'weight', value: 850, unit: 'kg', date: new Date().toISOString() },
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+// Transform Supabase data to local types
+const transformSupabaseAnimal = (supabaseAnimal: any): Animal => ({
+  id: supabaseAnimal.id,
+  farmId: supabaseAnimal.farm_id,
+  name: supabaseAnimal.name,
+  species: supabaseAnimal.species,
+  breed: supabaseAnimal.breed,
+  birthDate: supabaseAnimal.birth_date,
+  gender: supabaseAnimal.gender,
+  motherId: supabaseAnimal.mother_id,
+  fatherId: supabaseAnimal.father_id,
+  healthScore: supabaseAnimal.health_score,
+  location: supabaseAnimal.location,
+  weight: supabaseAnimal.weight,
+  status: supabaseAnimal.status,
+  qrCode: supabaseAnimal.qr_code,
+  rfidTag: supabaseAnimal.rfid_tag,
+  measurements: [], // Initialize empty, can be loaded separately
+  createdAt: supabaseAnimal.created_at,
+  updatedAt: supabaseAnimal.updated_at,
+});
 
-const sampleTasks: Task[] = [
-  {
-    id: 'task_1',
-    farmId: 'farm-1',
-    title: 'Vaccination - Cattle Group A',
-    description: 'Annual vaccination for 12 cattle in Pasture A',
-    type: 'health',
-    priority: 'high',
-    status: 'pending',
-    assignedTo: 'Dr. Sarah Johnson',
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+const transformSupabaseTask = (supabaseTask: any): Task => ({
+  id: supabaseTask.id,
+  farmId: supabaseTask.farm_id,
+  title: supabaseTask.title,
+  description: supabaseTask.description,
+  type: supabaseTask.type,
+  priority: supabaseTask.priority,
+  status: supabaseTask.status,
+  assignedTo: supabaseTask.assigned_to,
+  dueDate: supabaseTask.due_date,
+  animalId: supabaseTask.animal_id,
+  createdBy: supabaseTask.created_by,
+  createdAt: supabaseTask.created_at,
+  updatedAt: supabaseTask.updated_at,
+});
 
-const sampleInventory: InventoryItem[] = [
-  {
-    id: 'inv_1',
-    farmId: 'farm-1',
-    name: 'Premium Cattle Feed',
-    category: 'feed',
-    quantity: 500,
-    unit: 'kg',
-    minStock: 100,
-    cost: 2.50,
-    supplier: 'Farm Supply Co.',
-    location: 'Feed Storage A',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-const sampleStaff: StaffMember[] = [
-  {
-    id: 'staff_1',
-    farmId: 'farm-1',
-    name: 'John Smith',
-    email: 'john@farm.com',
-    role: 'manager',
-    department: 'Operations',
-    phone: '+1 (555) 123-4567',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-    status: 'active',
-    hireDate: '2020-01-15',
-    permissions: ['manage_animals', 'view_reports', 'manage_staff'],
-    hoursWorked: 160,
-    performance: 95,
-    location: 'Main Farm',
-    salary: 65000,
-    emergencyContact: {
-      name: 'Jane Smith',
-      phone: '+1 (555) 123-4568',
-      relationship: 'Spouse'
-    }
-  },
-];
-
-export const useData = create<DataState>()(
+export const useDataStore = create<DataState>()(
   persist(
     (set, get) => ({
-      animals: sampleAnimals,
-      tasks: sampleTasks,
-      inventory: sampleInventory,
+      // Initial state
+      animals: [],
+      tasks: [],
+      inventory: [],
       healthRecords: [],
       feedingRecords: [],
       breedingRecords: [],
       productionRecords: [],
-      staff: sampleStaff,
-      
+      staff: [],
+      isLoading: false,
+      error: null,
+
+      // Actions
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+
+      // Fetch all data from Supabase
+      fetchAllData: async () => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const [
+            animals,
+            tasks,
+            healthRecords,
+            feedingRecords,
+            breedingRecords,
+            productionRecords,
+            staff
+          ] = await Promise.all([
+            dataService.getAnimals(),
+            dataService.getTasks(),
+            dataService.getHealthRecords(),
+            dataService.getFeedingRecords(),
+            dataService.getBreedingRecords(),
+            dataService.getProductionRecords(),
+            dataService.getStaff(),
+          ]);
+
+          set({
+            animals: animals.map(transformSupabaseAnimal),
+            tasks: tasks.map(transformSupabaseTask),
+            healthRecords,
+            feedingRecords,
+            breedingRecords,
+            productionRecords,
+            staff,
+            isLoading: false,
+          });
+        } catch (error: any) {
+          console.error('Error fetching data:', error);
+          set({ error: error.message, isLoading: false });
+        }
+      },
+
       // Animal operations
-      addAnimal: (animalData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newAnimal: Animal = {
-          ...animalData,
-          id: `animal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          measurements: [],
-          vaccinations: animalData.vaccinations || [],
-          treatments: animalData.treatments || [],
-          qrCode: `QR_${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        set(state => ({ animals: [...state.animals, newAnimal] }));
+      addAnimal: async (animalData) => {
+        try {
+          const newAnimal = await dataService.createAnimal({
+            name: animalData.name,
+            species: animalData.species,
+            breed: animalData.breed,
+            birth_date: animalData.birthDate,
+            gender: animalData.gender,
+            mother_id: animalData.motherId,
+            father_id: animalData.fatherId,
+            health_score: animalData.healthScore,
+            location: animalData.location,
+            weight: animalData.weight,
+            status: animalData.status,
+            qr_code: animalData.qrCode,
+            rfid_tag: animalData.rfidTag,
+          });
+
+          const transformedAnimal = transformSupabaseAnimal(newAnimal);
+          set(state => ({ animals: [...state.animals, transformedAnimal] }));
+        } catch (error: any) {
+          console.error('Error adding animal:', error);
+          set({ error: error.message });
+        }
       },
-      
-      updateAnimal: (id, animalData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          animals: state.animals.map(animal =>
-            animal.id === id && animal.farmId === farmId
-              ? { ...animal, ...animalData, updatedAt: new Date().toISOString() }
-              : animal
-          )
-        }));
+
+      updateAnimal: async (id, animalData) => {
+        try {
+          const updateData: any = {};
+          if (animalData.name) updateData.name = animalData.name;
+          if (animalData.species) updateData.species = animalData.species;
+          if (animalData.breed) updateData.breed = animalData.breed;
+          if (animalData.birthDate) updateData.birth_date = animalData.birthDate;
+          if (animalData.gender) updateData.gender = animalData.gender;
+          if (animalData.motherId) updateData.mother_id = animalData.motherId;
+          if (animalData.fatherId) updateData.father_id = animalData.fatherId;
+          if (animalData.healthScore !== undefined) updateData.health_score = animalData.healthScore;
+          if (animalData.location) updateData.location = animalData.location;
+          if (animalData.weight !== undefined) updateData.weight = animalData.weight;
+          if (animalData.status) updateData.status = animalData.status;
+          if (animalData.qrCode) updateData.qr_code = animalData.qrCode;
+          if (animalData.rfidTag) updateData.rfid_tag = animalData.rfidTag;
+
+          const updatedAnimal = await dataService.updateAnimal(id, updateData);
+          const transformedAnimal = transformSupabaseAnimal(updatedAnimal);
+          
+          set(state => ({
+            animals: state.animals.map(animal =>
+              animal.id === id ? transformedAnimal : animal
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error updating animal:', error);
+          set({ error: error.message });
+        }
       },
-      
-      deleteAnimal: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          animals: state.animals.filter(animal => !(animal.id === id && animal.farmId === farmId)),
-          healthRecords: state.healthRecords.filter(record => !(record.animalId === id && record.farmId === farmId)),
-          feedingRecords: state.feedingRecords.filter(record => !(record.animalId === id && record.farmId === farmId)),
-          productionRecords: state.productionRecords.filter(record => !(record.animalId === id && record.farmId === farmId)),
-        }));
+
+      deleteAnimal: async (id) => {
+        try {
+          await dataService.deleteAnimal(id);
+          set(state => ({
+            animals: state.animals.filter(animal => animal.id !== id)
+          }));
+        } catch (error: any) {
+          console.error('Error deleting animal:', error);
+          set({ error: error.message });
+        }
       },
-      
+
       // Task operations
-      addTask: (taskData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newTask: Task = {
-          ...taskData,
-          id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        set(state => ({ tasks: [...state.tasks, newTask] }));
+      addTask: async (taskData) => {
+        try {
+          const newTask = await dataService.createTask({
+            title: taskData.title,
+            description: taskData.description,
+            type: taskData.type,
+            priority: taskData.priority,
+            status: taskData.status,
+            assigned_to: taskData.assignedTo,
+            due_date: taskData.dueDate,
+            animal_id: taskData.animalId,
+            created_by: taskData.createdBy,
+          });
+
+          const transformedTask = transformSupabaseTask(newTask);
+          set(state => ({ tasks: [...state.tasks, transformedTask] }));
+        } catch (error: any) {
+          console.error('Error adding task:', error);
+          set({ error: error.message });
+        }
       },
-      
-      updateTask: (id, taskData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          tasks: state.tasks.map(task =>
-            task.id === id && task.farmId === farmId
-              ? { ...task, ...taskData, updatedAt: new Date().toISOString() }
-              : task
-          )
-        }));
+
+      updateTask: async (id, taskData) => {
+        try {
+          const updateData: any = {};
+          if (taskData.title) updateData.title = taskData.title;
+          if (taskData.description) updateData.description = taskData.description;
+          if (taskData.type) updateData.type = taskData.type;
+          if (taskData.priority) updateData.priority = taskData.priority;
+          if (taskData.status) updateData.status = taskData.status;
+          if (taskData.assignedTo) updateData.assigned_to = taskData.assignedTo;
+          if (taskData.dueDate) updateData.due_date = taskData.dueDate;
+          if (taskData.animalId) updateData.animal_id = taskData.animalId;
+
+          const updatedTask = await dataService.updateTask(id, updateData);
+          const transformedTask = transformSupabaseTask(updatedTask);
+          
+          set(state => ({
+            tasks: state.tasks.map(task =>
+              task.id === id ? transformedTask : task
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error updating task:', error);
+          set({ error: error.message });
+        }
       },
-      
-      deleteTask: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          tasks: state.tasks.filter(task => !(task.id === id && task.farmId === farmId))
-        }));
+
+      deleteTask: async (id) => {
+        try {
+          await dataService.deleteTask(id);
+          set(state => ({
+            tasks: state.tasks.filter(task => task.id !== id)
+          }));
+        } catch (error: any) {
+          console.error('Error deleting task:', error);
+          set({ error: error.message });
+        }
       },
-      
-      // Inventory operations
-      addInventoryItem: (itemData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newItem: InventoryItem = {
-          ...itemData,
-          id: `inventory_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        set(state => ({ inventory: [...state.inventory, newItem] }));
-      },
-      
-      updateInventoryItem: (id, itemData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          inventory: state.inventory.map(item =>
-            item.id === id && item.farmId === farmId
-              ? { ...item, ...itemData, updatedAt: new Date().toISOString() }
-              : item
-          )
-        }));
-      },
-      
-      deleteInventoryItem: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          inventory: state.inventory.filter(item => !(item.id === id && item.farmId === farmId))
-        }));
-      },
-      
+
       // Health record operations
-      addHealthRecord: (recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newRecord: HealthRecord = {
-          ...recordData,
-          id: `health_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-        };
-        set(state => ({ healthRecords: [...state.healthRecords, newRecord] }));
-        
-        // Update animal's health score
-        const { updateAnimal } = get();
-        updateAnimal(recordData.animalId, { healthScore: recordData.healthScore });
+      addHealthRecord: async (recordData) => {
+        try {
+          const newRecord = await dataService.createHealthRecord({
+            animal_id: recordData.animalId,
+            type: recordData.type,
+            title: recordData.title,
+            description: recordData.description,
+            veterinarian: recordData.veterinarian,
+            medications: recordData.medications,
+            next_due_date: recordData.nextDueDate,
+            cost: recordData.cost,
+            status: recordData.status,
+          });
+
+          set(state => ({ healthRecords: [...state.healthRecords, newRecord] }));
+        } catch (error: any) {
+          console.error('Error adding health record:', error);
+          set({ error: error.message });
+        }
       },
-      
-      updateHealthRecord: (id, recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          healthRecords: state.healthRecords.map(record =>
-            record.id === id && record.farmId === farmId ? { ...record, ...recordData } : record
-          )
-        }));
+
+      updateHealthRecord: async (id, recordData) => {
+        try {
+          const updateData: any = {};
+          if (recordData.animalId) updateData.animal_id = recordData.animalId;
+          if (recordData.type) updateData.type = recordData.type;
+          if (recordData.title) updateData.title = recordData.title;
+          if (recordData.description) updateData.description = recordData.description;
+          if (recordData.veterinarian) updateData.veterinarian = recordData.veterinarian;
+          if (recordData.medications) updateData.medications = recordData.medications;
+          if (recordData.nextDueDate) updateData.next_due_date = recordData.nextDueDate;
+          if (recordData.cost !== undefined) updateData.cost = recordData.cost;
+          if (recordData.status) updateData.status = recordData.status;
+
+          const updatedRecord = await dataService.updateHealthRecord(id, updateData);
+          
+          set(state => ({
+            healthRecords: state.healthRecords.map(record =>
+              record.id === id ? updatedRecord : record
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error updating health record:', error);
+          set({ error: error.message });
+        }
       },
-      
-      deleteHealthRecord: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          healthRecords: state.healthRecords.filter(record => !(record.id === id && record.farmId === farmId))
-        }));
+
+      deleteHealthRecord: async (id) => {
+        try {
+          await dataService.deleteHealthRecord(id);
+          set(state => ({
+            healthRecords: state.healthRecords.filter(record => record.id !== id)
+          }));
+        } catch (error: any) {
+          console.error('Error deleting health record:', error);
+          set({ error: error.message });
+        }
       },
-      
+
       // Feeding record operations
-      addFeedingRecord: (recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newRecord: FeedingRecord = {
-          ...recordData,
-          id: `feeding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-        };
-        set(state => ({ feedingRecords: [...state.feedingRecords, newRecord] }));
+      addFeedingRecord: async (recordData) => {
+        try {
+          const newRecord = await dataService.createFeedingRecord({
+            animal_id: recordData.animalId,
+            feed_type: recordData.feedType,
+            amount: recordData.amount,
+            unit: recordData.unit,
+            cost: recordData.cost,
+            fed_by: recordData.fedBy,
+            notes: recordData.notes,
+          });
+
+          set(state => ({ feedingRecords: [...state.feedingRecords, newRecord] }));
+        } catch (error: any) {
+          console.error('Error adding feeding record:', error);
+          set({ error: error.message });
+        }
       },
-      
-      updateFeedingRecord: (id, recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          feedingRecords: state.feedingRecords.map(record =>
-            record.id === id && record.farmId === farmId ? { ...record, ...recordData } : record
-          )
-        }));
-      },
-      
-      deleteFeedingRecord: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          feedingRecords: state.feedingRecords.filter(record => !(record.id === id && record.farmId === farmId))
-        }));
-      },
-      
+
       // Breeding record operations
-      addBreedingRecord: (recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newRecord: BreedingRecord = {
-          ...recordData,
-          id: `breeding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-        };
-        set(state => ({ breedingRecords: [...state.breedingRecords, newRecord] }));
-      },
-      
-      updateBreedingRecord: (id, recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          breedingRecords: state.breedingRecords.map(record =>
-            record.id === id && record.farmId === farmId ? { ...record, ...recordData } : record
-          )
-        }));
-      },
-      
-      deleteBreedingRecord: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          breedingRecords: state.breedingRecords.filter(record => !(record.id === id && record.farmId === farmId))
-        }));
+      addBreedingRecord: async (recordData) => {
+        try {
+          const newRecord = await dataService.createBreedingRecord({
+            mother_id: recordData.motherId,
+            father_id: recordData.fatherId,
+            breeding_date: recordData.breedingDate,
+            expected_birth_date: recordData.expectedBirthDate,
+            actual_birth_date: recordData.actualBirthDate,
+            offspring_count: recordData.offspringCount,
+            success: recordData.success,
+            notes: recordData.notes,
+          });
+
+          set(state => ({ breedingRecords: [...state.breedingRecords, newRecord] }));
+        } catch (error: any) {
+          console.error('Error adding breeding record:', error);
+          set({ error: error.message });
+        }
       },
 
       // Production record operations
-      addProductionRecord: (recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newRecord: ProductionRecord = {
-          ...recordData,
-          id: `production_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-          createdAt: new Date().toISOString(),
-        };
-        set(state => ({ productionRecords: [...state.productionRecords, newRecord] }));
-      },
+      addProductionRecord: async (recordData) => {
+        try {
+          const newRecord = await dataService.createProductionRecord({
+            animal_id: recordData.animalId,
+            type: recordData.type,
+            quantity: recordData.quantity,
+            unit: recordData.unit,
+            quality_grade: recordData.qualityGrade,
+            price_per_unit: recordData.pricePerUnit,
+            total_value: recordData.totalValue,
+            recorded_by: recordData.recordedBy,
+          });
 
-      updateProductionRecord: (id, recordData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          productionRecords: state.productionRecords.map(record =>
-            record.id === id && record.farmId === farmId ? { ...record, ...recordData } : record
-          )
-        }));
-      },
-
-      deleteProductionRecord: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          productionRecords: state.productionRecords.filter(record => !(record.id === id && record.farmId === farmId))
-        }));
+          set(state => ({ productionRecords: [...state.productionRecords, newRecord] }));
+        } catch (error: any) {
+          console.error('Error adding production record:', error);
+          set({ error: error.message });
+        }
       },
 
       // Staff operations
-      addStaffMember: (staffData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newStaff: StaffMember = {
-          ...staffData,
-          id: `staff_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          farmId,
-        };
-        set(state => ({ staff: [...state.staff, newStaff] }));
+      addStaffMember: async (staffData) => {
+        try {
+          const newStaff = await dataService.createStaff({
+            user_id: staffData.userId,
+            name: staffData.name,
+            role: staffData.role,
+            permissions: staffData.permissions,
+            salary: staffData.salary,
+            hire_date: staffData.hireDate,
+            status: staffData.status,
+          });
+
+          set(state => ({ staff: [...state.staff, newStaff] }));
+        } catch (error: any) {
+          console.error('Error adding staff member:', error);
+          set({ error: error.message });
+        }
       },
 
-      updateStaffMember: (id, staffData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          staff: state.staff.map(member =>
-            member.id === id && member.farmId === farmId
-              ? { ...member, ...staffData }
-              : member
-          )
-        }));
+      updateStaffMember: async (id, staffData) => {
+        try {
+          const updateData: any = {};
+          if (staffData.userId) updateData.user_id = staffData.userId;
+          if (staffData.name) updateData.name = staffData.name;
+          if (staffData.role) updateData.role = staffData.role;
+          if (staffData.permissions) updateData.permissions = staffData.permissions;
+          if (staffData.salary !== undefined) updateData.salary = staffData.salary;
+          if (staffData.hireDate) updateData.hire_date = staffData.hireDate;
+          if (staffData.status) updateData.status = staffData.status;
+
+          const updatedStaff = await dataService.updateStaff(id, updateData);
+          
+          set(state => ({
+            staff: state.staff.map(member =>
+              member.id === id ? updatedStaff : member
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error updating staff member:', error);
+          set({ error: error.message });
+        }
       },
 
-      deleteStaffMember: (id) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          staff: state.staff.filter(member => !(member.id === id && member.farmId === farmId))
-        }));
+      deleteStaffMember: async (id) => {
+        try {
+          await dataService.deleteStaff(id);
+          set(state => ({
+            staff: state.staff.filter(member => member.id !== id)
+          }));
+        } catch (error: any) {
+          console.error('Error deleting staff member:', error);
+          set({ error: error.message });
+        }
       },
 
-      // Measurement operations
-      addMeasurement: (animalId, measurementData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        const newMeasurement: Measurement = {
-          ...measurementData,
-          id: `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        };
-        
-        set(state => ({
-          animals: state.animals.map(animal =>
-            animal.id === animalId && animal.farmId === farmId
-              ? { 
-                  ...animal, 
-                  measurements: [...animal.measurements, newMeasurement],
-                  updatedAt: new Date().toISOString()
-                }
-              : animal
-          )
-        }));
+      // Measurement operations (local only for now)
+      addMeasurement: async (animalId, measurementData) => {
+        try {
+          const farmId = getCurrentFarmId();
+          
+          const newMeasurement: Measurement = {
+            ...measurementData,
+            id: `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          };
+          
+          set(state => ({
+            animals: state.animals.map(animal =>
+              animal.id === animalId && animal.farmId === farmId
+                ? { 
+                    ...animal, 
+                    measurements: [...animal.measurements, newMeasurement],
+                    updatedAt: new Date().toISOString()
+                  }
+                : animal
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error adding measurement:', error);
+          set({ error: error.message });
+        }
       },
 
-      updateMeasurement: (animalId, measurementId, measurementData) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          animals: state.animals.map(animal =>
-            animal.id === animalId && animal.farmId === farmId
-              ? {
-                  ...animal,
-                  measurements: animal.measurements.map(measurement =>
-                    measurement.id === measurementId
-                      ? { ...measurement, ...measurementData }
-                      : measurement
-                  ),
-                  updatedAt: new Date().toISOString()
-                }
-              : animal
-          )
-        }));
+      updateMeasurement: async (animalId, measurementId, measurementData) => {
+        try {
+          const farmId = getCurrentFarmId();
+          
+          set(state => ({
+            animals: state.animals.map(animal =>
+              animal.id === animalId && animal.farmId === farmId
+                ? {
+                    ...animal,
+                    measurements: animal.measurements.map(measurement =>
+                      measurement.id === measurementId
+                        ? { ...measurement, ...measurementData }
+                        : measurement
+                    ),
+                    updatedAt: new Date().toISOString()
+                  }
+                : animal
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error updating measurement:', error);
+          set({ error: error.message });
+        }
       },
 
-      deleteMeasurement: (animalId, measurementId) => {
-        const farmId = getCurrentFarmId();
-        if (!farmId) return;
-        
-        set(state => ({
-          animals: state.animals.map(animal =>
-            animal.id === animalId && animal.farmId === farmId
-              ? {
-                  ...animal,
-                  measurements: animal.measurements.filter(measurement => measurement.id !== measurementId),
-                  updatedAt: new Date().toISOString()
-                }
-              : animal
-          )
-        }));
+      deleteMeasurement: async (animalId, measurementId) => {
+        try {
+          const farmId = getCurrentFarmId();
+          
+          set(state => ({
+            animals: state.animals.map(animal =>
+              animal.id === animalId && animal.farmId === farmId
+                ? {
+                    ...animal,
+                    measurements: animal.measurements.filter(measurement => measurement.id !== measurementId),
+                    updatedAt: new Date().toISOString()
+                  }
+                : animal
+            )
+          }));
+        } catch (error: any) {
+          console.error('Error deleting measurement:', error);
+          set({ error: error.message });
+        }
       },
     }),
     {
       name: 'agroinsight-data-storage',
-      version: 6,
+      version: 7,
       migrate: (persistedState: any) => {
         return persistedState;
       },
@@ -717,49 +692,34 @@ export const useData = create<DataState>()(
   )
 );
 
-// Create a hook that returns filtered data for the current user's farm
+// Hook that returns filtered data for the current user's farm
 export const useData = () => {
-  const store = useData();
-  const farmId = getCurrentFarmId();
+  const store = useDataStore();
+  const { user } = useAuth();
   
+  if (!user?.farmId) {
+    return {
+      ...store,
+      animals: [],
+      tasks: [],
+      inventory: [],
+      healthRecords: [],
+      feedingRecords: [],
+      breedingRecords: [],
+      productionRecords: [],
+      staff: [],
+    };
+  }
+
   return {
-    // Filtered data
-    animals: farmId ? store.animals.filter(a => a.farmId === farmId) : [],
-    tasks: farmId ? store.tasks.filter(t => t.farmId === farmId) : [],
-    inventory: farmId ? store.inventory.filter(i => i.farmId === farmId) : [],
-    healthRecords: farmId ? store.healthRecords.filter(h => h.farmId === farmId) : [],
-    feedingRecords: farmId ? store.feedingRecords.filter(f => f.farmId === farmId) : [],
-    breedingRecords: farmId ? store.breedingRecords.filter(b => b.farmId === farmId) : [],
-    productionRecords: farmId ? store.productionRecords.filter(p => p.farmId === farmId) : [],
-    staff: farmId ? store.staff.filter(s => s.farmId === farmId) : [],
-    
-    // Actions
-    addAnimal: store.addAnimal,
-    updateAnimal: store.updateAnimal,
-    deleteAnimal: store.deleteAnimal,
-    addTask: store.addTask,
-    updateTask: store.updateTask,
-    deleteTask: store.deleteTask,
-    addInventoryItem: store.addInventoryItem,
-    updateInventoryItem: store.updateInventoryItem,
-    deleteInventoryItem: store.deleteInventoryItem,
-    addHealthRecord: store.addHealthRecord,
-    updateHealthRecord: store.updateHealthRecord,
-    deleteHealthRecord: store.deleteHealthRecord,
-    addFeedingRecord: store.addFeedingRecord,
-    updateFeedingRecord: store.updateFeedingRecord,
-    deleteFeedingRecord: store.deleteFeedingRecord,
-    addBreedingRecord: store.addBreedingRecord,
-    updateBreedingRecord: store.updateBreedingRecord,
-    deleteBreedingRecord: store.deleteBreedingRecord,
-    addProductionRecord: store.addProductionRecord,
-    updateProductionRecord: store.updateProductionRecord,
-    deleteProductionRecord: store.deleteProductionRecord,
-    addStaffMember: store.addStaffMember,
-    updateStaffMember: store.updateStaffMember,
-    deleteStaffMember: store.deleteStaffMember,
-    addMeasurement: store.addMeasurement,
-    updateMeasurement: store.updateMeasurement,
-    deleteMeasurement: store.deleteMeasurement,
+    ...store,
+    animals: store.animals.filter(animal => animal.farmId === user.farmId),
+    tasks: store.tasks.filter(task => task.farmId === user.farmId),
+    inventory: store.inventory.filter(item => item.farmId === user.farmId),
+    healthRecords: store.healthRecords.filter(record => record.farm_id === user.farmId),
+    feedingRecords: store.feedingRecords.filter(record => record.farm_id === user.farmId),
+    breedingRecords: store.breedingRecords.filter(record => record.farm_id === user.farmId),
+    productionRecords: store.productionRecords.filter(record => record.farm_id === user.farmId),
+    staff: store.staff.filter(member => member.farm_id === user.farmId),
   };
 };
