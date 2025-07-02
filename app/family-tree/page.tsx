@@ -9,11 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TreePine, Users, Heart, Dna, Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import { motion } from 'framer-motion';
 
 export default function FamilyTreePage() {
-  const { animals } = useData();
+  const { animals } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecies, setSelectedSpecies] = useState('all');
   const [selectedAnimal, setSelectedAnimal] = useState<string | null>(null);

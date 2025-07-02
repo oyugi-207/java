@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Trash2 } from 'lucide-react';
-import { useData, type InventoryItem } from '@/lib/data';
+import { useFarmData, type InventoryItem } from '@/lib/data';
 import toast from 'react-hot-toast';
 
 const inventorySchema = z.object({
@@ -41,7 +41,7 @@ interface InventoryModalProps {
 }
 
 export function InventoryModal({ open, onOpenChange, item }: InventoryModalProps) {
-  const { addInventoryItem, updateInventoryItem, deleteInventoryItem } = useData();
+  const { addInventoryItem, updateInventoryItem, deleteInventoryItem } = useFarmData();
   const isEditing = !!item;
 
   const form = useForm<InventoryForm>({

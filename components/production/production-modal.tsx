@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import toast from 'react-hot-toast';
 
 const productionRecordSchema = z.object({
@@ -38,7 +38,7 @@ interface ProductionModalProps {
 }
 
 export function ProductionModal({ open, onOpenChange, animal }: ProductionModalProps) {
-  const { animals, addProductionRecord } = useData();
+  const { animals, addProductionRecord } = useFarmData();
 
   const form = useForm<ProductionRecordForm>({
     resolver: zodResolver(productionRecordSchema),

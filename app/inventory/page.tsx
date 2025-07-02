@@ -14,13 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, Package, AlertTriangle, TrendingDown, DollarSign } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { useFarmData} from '@/lib/data';
 import { InventoryModal } from '@/components/inventory/inventory-modal';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
 export default function InventoryPage() {
-  const { inventory } = useData();
+  const { inventory } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);

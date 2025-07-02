@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Trash2 } from 'lucide-react';
-import { useData, type Task } from '@/lib/data';
+import { useFarmData, type Task } from '@/lib/data';
 import toast from 'react-hot-toast';
 
 const taskSchema = z.object({
@@ -41,7 +41,7 @@ interface TaskModalProps {
 }
 
 export function TaskModal({ open, onOpenChange, task }: TaskModalProps) {
-  const { animals, addTask, updateTask, deleteTask } = useData();
+  const { animals, addTask, updateTask, deleteTask } = useFarmData();
   const isEditing = !!task;
 
   const form = useForm<TaskForm>({

@@ -14,13 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, Calendar, User, Clock, CheckCircle2 } from 'lucide-react';
-import { useData } from '@/lib/data';
+import { useFarmData} from '@/lib/data';
 import { TaskModal } from '@/components/tasks/task-modal';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
 export default function TasksPage() {
-  const { tasks, updateTask } = useData();
+  const { tasks, updateTask } = useFarmData();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');

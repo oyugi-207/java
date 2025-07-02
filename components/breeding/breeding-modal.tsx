@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import toast from 'react-hot-toast';
 import { addDays, format } from 'date-fns';
 
@@ -37,7 +37,7 @@ interface BreedingModalProps {
 }
 
 export function BreedingModal({ open, onOpenChange, animal }: BreedingModalProps) {
-  const { animals, addBreedingRecord, updateAnimal } = useData();
+  const { animals, addBreedingRecord, updateAnimal } = useFarmData();
 
   const femaleAnimals = animals.filter(a => a.gender === 'female' && (a.status === 'healthy' || a.status === 'pregnant'));
   const maleAnimals = animals.filter(a => a.gender === 'male' && a.status === 'healthy');

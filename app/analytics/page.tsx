@@ -16,7 +16,7 @@ import {
 import { BarChart3, TrendingUp, Activity, Target, Download, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 
 const performanceData = [
   { month: 'Jan', health: 92, production: 88, efficiency: 85, growth: 78 },
@@ -44,7 +44,7 @@ const healthMetrics = [
 ];
 
 export default function AnalyticsPage() {
-  const { animals } = useData();
+  const { animals } =useFarmData();
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [selectedMetric, setSelectedMetric] = useState('all');
 

@@ -18,13 +18,13 @@ import {
 } from '@/components/ui/select';
 import { Activity, Plus, TrendingUp, Scale, Thermometer, Heart, Droplets } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useData } from '@/lib/data';
+import { useFarmData } from '@/lib/data';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
 export default function MeasurementsPage() {
-  const { animals, addMeasurement } = useData();
+  const { animals, addMeasurement } = useFarmData();
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const [newMeasurement, setNewMeasurement] = useState({
