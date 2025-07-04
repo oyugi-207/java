@@ -1,23 +1,24 @@
 import React from 'react';
 
-const TeamPage: React.FC = () => {
+// Change from React.FC to a regular function component
+export default function TeamPage() {
   const teamMembers = [
     {
       name: 'John Doe',
       role: 'Team Lead',
-      imageUrl: '/john-doe.jpg', // Replace with actual image URL
+      imageUrl: '/john-doe.jpg',
       bio: 'John is an experienced team lead with a passion for innovation.',
     },
     {
       name: 'Jane Smith',
       role: 'Software Engineer',
-      imageUrl: '/jane-smith.jpg', // Replace with actual image URL
+      imageUrl: '/jane-smith.jpg',
       bio: 'Jane is a talented software engineer specializing in frontend development.',
     },
     {
       name: 'Peter Jones',
       role: 'Data Scientist',
-      imageUrl: '/peter-jones.jpg', // Replace with actual image URL
+      imageUrl: '/peter-jones.jpg',
       bio: 'Peter is a data scientist with expertise in machine learning and statistical analysis.',
     },
   ];
@@ -41,6 +42,4 @@ const TeamPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default TeamPage;
+}
